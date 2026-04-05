@@ -155,7 +155,7 @@ $burn_color; printf "%s %s/m" "$IC_BURN" "$(fmt_tokens "$BURN_RATE")"; rst
 
 # Cache ratio
 sep
-clr_cache; printf "%s cache %d%%" "$IC_CACHE" "$CACHE_RATIO"; rst
+clr_cache; printf "%s  cache %d%%" "$IC_CACHE" "$CACHE_RATIO"; rst
 
 # MCP health (always show)
 sep
@@ -165,9 +165,9 @@ if (( MCP_TOTAL > 0 )); then
   else
     clr_mcp_bad; bld
   fi
-  printf "%s %d/%d" "$IC_MCP" "$MCP_HEALTHY" "$MCP_TOTAL"
+  printf "%s  %d/%d" "$IC_MCP" "$MCP_HEALTHY" "$MCP_TOTAL"
 else
-  clr_dim; printf "%s 0" "$IC_MCP"
+  clr_dim; printf "%s  0" "$IC_MCP"
 fi
 rst
 

@@ -141,12 +141,12 @@ esac
 printf "%s 1.2k/m" "$IC_BURN"; rst
 
 sep
-clr_cache; printf "%s cache %d%%" "$IC_CACHE" "$CACHE_PCT"; rst
+clr_cache; printf "%s  cache %d%%" "$IC_CACHE" "$CACHE_PCT"; rst
 
 # MCP (always show)
 sep
 if (( MCP_OK == MCP_TOTAL )); then clr_mcp_ok; else clr_mcp_bad; bld; fi
-printf "%s %d/%d" "$IC_MCP" "$MCP_OK" "$MCP_TOTAL"; rst
+printf "%s  %d/%d" "$IC_MCP" "$MCP_OK" "$MCP_TOTAL"; rst
 
 echo ""
 
