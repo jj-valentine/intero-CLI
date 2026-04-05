@@ -1,8 +1,8 @@
 # intero-CLI
 
-A rich, 3-line status bar for [Claude Code](https://docs.anthropic.com/en/docs/claude-code) that surfaces context, git state, rate limits, and more — right in your terminal.
+A rich, multi-line status bar for Claude Code that surfaces context, git state, rate limits, and more — right in your terminal.
 
-**intero** = *interoception* — your session's vital signs at a glance. Part of the brain ecosystem: [cerebellum](https://github.com/jj-valentine/cerebellum) (memory), [cerebro](https://github.com/jj-valentine/cerebro) (orchestration), intero (surfacing internal state).
+**intero-CLI** — from *interoception* + *CLI* — your session's vital signs at a glance. Part of the brain ecosystem: [cerebellum](https://github.com/jj-valentine/cerebellum) (memory), [cerebro](https://github.com/jj-valentine/cerebro) (orchestration), intero (surfacing internal state).
 
 ## What it shows
 
