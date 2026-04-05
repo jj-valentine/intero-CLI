@@ -163,9 +163,9 @@ git_sync_status() {
     if (( GIT_LAST_FETCH > 0 )); then
       fetch_age=$((now - GIT_LAST_FETCH))
       if (( fetch_age > 86400 )); then
-        c_red; printf "%s fetched %s" "$IC_REFRESH" "$(fmt_relative "$GIT_LAST_FETCH")"; rst
+        c_red; printf "fetched %s" "$(fmt_relative "$GIT_LAST_FETCH")"; rst
       elif (( fetch_age > 3600 )); then
-        c_peach; printf "%s fetched %s" "$IC_REFRESH" "$(fmt_relative "$GIT_LAST_FETCH")"; rst
+        c_peach; printf "fetched %s" "$(fmt_relative "$GIT_LAST_FETCH")"; rst
       else
         clr_sync_ok; printf "%s synced" "$IC_SYNCED"; rst
       fi

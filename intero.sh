@@ -110,8 +110,15 @@ fi
 # Git branch
 if (( GIT_IN_REPO )); then
   sep; git_branch_section
+fi
 
-  # Sync status (own section)
+# Lines changed
+sep
+clr_add; printf "%s +%d" "$IC_DIFF" "$LINES_ADD"; rst
+clr_del; printf " -%d" "$LINES_DEL"; rst
+
+# Sync status
+if (( GIT_IN_REPO )); then
   sep; git_sync_status
 fi
 
@@ -125,17 +132,12 @@ fi
 
 echo ""
 
-# ── Line 2: Context + Activity ──────────────────────────────────────────────
+# ── Line 2: Context + Burn + Cache ─────────────────────────────────────────
 # Context bar
 clr_ctx; printf "%s ctx " "$IC_CTX"; rst
 render_bar "$CTX_PCT" 10 c_sky
 clr_dim; printf " %d%%" "$CTX_PCT"; rst
 dim; clr_dim; printf " %s/%s" "$(fmt_tokens "$TOTAL_TOKENS")" "$(fmt_tokens "$CTX_SIZE")"; rst
-
-# Lines changed
-sep
-clr_add; printf "%s +%d" "$IC_DIFF" "$LINES_ADD"; rst
-clr_del; printf " -%d" "$LINES_DEL"; rst
 
 # Burn rate
 sep
@@ -163,7 +165,7 @@ if [[ -n "$RATE_5H_PCT" ]]; then
   render_bar "$display_5h" 10 c_teal
   clr_dim; printf " %d%%" "$display_5h"; rst
   if [[ -n "$RATE_5H_RESET" ]]; then
-    dim; clr_dim; printf " %s%s" "$IC_REFRESH" "$(fmt_reset "$RATE_5H_RESET")"; rst
+    dim; clr_dim; printf " resets %s" "$(fmt_reset "$RATE_5H_RESET")"; rst
   fi
 fi
 
@@ -174,7 +176,7 @@ if [[ -n "$RATE_7D_PCT" ]]; then
   render_bar "$RATE_7D_PCT" 10 c_lavender
   clr_dim; printf " %d%%" "$RATE_7D_PCT"; rst
   if [[ -n "$RATE_7D_RESET" ]]; then
-    dim; clr_dim; printf " %s%s" "$IC_REFRESH" "$(fmt_reset "$RATE_7D_RESET")"; rst
+    dim; clr_dim; printf " resets %s" "$(fmt_reset "$RATE_7D_RESET")"; rst
   fi
 fi
 

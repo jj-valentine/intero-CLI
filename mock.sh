@@ -72,6 +72,11 @@ if (( DIRTY > 0 )); then c_peach; printf " %s%d" "$IC_DIRTY" "$DIRTY"; rst; fi
 if (( STAGED > 0 )); then c_green; printf " %s%d" "$IC_STAGED" "$STAGED"; rst; fi
 if (( UNTRACKED > 0 )); then c_overlay0; printf " %s%d" "$IC_UNTRACKED" "$UNTRACKED"; rst; fi
 
+# Lines changed
+sep
+clr_add; printf "%s +%d" "$IC_DIFF" "$LINES_ADD"; rst
+clr_del; printf " -%d" "$LINES_DEL"; rst
+
 # Sync status
 sep
 if [[ -n "$GIT_OP" ]]; then
@@ -83,7 +88,7 @@ elif [[ "$SYNC_STATE" == "ahead" ]]; then
 elif [[ "$SYNC_STATE" == "diverged" ]]; then
   clr_sync_bad; printf "%s %s3 %s12 diverged" "$IC_WARNING" "$IC_PUSH" "$IC_PULL"; rst
 elif [[ "$SYNC_STATE" == "stale" ]]; then
-  c_red; printf "%s fetched 3d ago" "$IC_REFRESH"; rst
+  c_red; printf "fetched 3d ago"; rst
 elif [[ "$SYNC_STATE" == "no-upstream" ]]; then
   c_peach; printf "%s no upstream" "$IC_WARNING"; rst
 else
@@ -104,15 +109,11 @@ fi
 
 echo ""
 
-# ── Line 2: Context + Activity ──────────────────────────────────────────────
+# ── Line 2: Context + Burn + Cache ─────────────────────────────────────────
 clr_ctx; printf "%s ctx " "$IC_CTX"; rst
 render_bar "$CTX_PCT" 10 c_sky
 clr_dim; printf " %d%%" "$CTX_PCT"; rst
 dim; clr_dim; printf " %s/%s" "$CTX_TOKENS" "$CTX_TOTAL"; rst
-
-sep
-clr_add; printf "%s +%d" "$IC_DIFF" "$LINES_ADD"; rst
-clr_del; printf " -%d" "$LINES_DEL"; rst
 
 sep
 case "$BURN_LEVEL" in
@@ -131,13 +132,13 @@ echo ""
 clr_rate5h; printf "%s 5h " "$IC_RATE"; rst
 render_bar "$RATE_5H" 10 c_teal
 clr_dim; printf " %d%%" "$RATE_5H"; rst
-dim; clr_dim; printf " %s%s" "$IC_REFRESH" "$RATE_5H_RESET"; rst
+dim; clr_dim; printf " resets %s" "$RATE_5H_RESET"; rst
 
 sep
 clr_rate7d; printf "7d "; rst
 render_bar "$RATE_7D" 10 c_lavender
 clr_dim; printf " %d%%" "$RATE_7D"; rst
-dim; clr_dim; printf " %s%s" "$IC_REFRESH" "$RATE_7D_RESET"; rst
+dim; clr_dim; printf " resets %s" "$RATE_7D_RESET"; rst
 
 # MCP
 sep
