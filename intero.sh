@@ -90,7 +90,7 @@ TAB_TITLE="$TAB_DIR"
 [[ -n "$TAB_SUMMARY" ]] && TAB_TITLE="$TAB_TITLE · $TAB_SUMMARY"
 printf '\e]0;%s\a' "$TAB_TITLE" >/dev/tty 2>/dev/null
 
-# ── Line 1: Identity + Git + Sync ───────────────────────────────────────────
+# ── Line 1: Identity + Git ──────────────────────────────────────────────────
 # Model + thinking
 clr_model; bld; printf "%s %s" "$IC_MODEL" "$MODEL_NAME"; rst
 if [[ -n "$THINKING_EFFORT" ]]; then
@@ -107,19 +107,24 @@ if [[ -n "$AGENT_NAME" ]]; then
   sep; c_sapphire; printf "agent:%s" "$AGENT_NAME"; rst
 fi
 
-# Git branch
-if (( GIT_IN_REPO )); then
-  sep; git_branch_section
-fi
-
 # Lines changed
 sep
 clr_add; printf "%s +%d" "$IC_DIFF" "$LINES_ADD"; rst
 clr_del; printf " -%d" "$LINES_DEL"; rst
 
-# Sync status
+# Git branch
 if (( GIT_IN_REPO )); then
+  sep; git_branch_section
+
+  # Sync status
   sep; git_sync_status
+fi
+
+# PR status
+pr_section_out=$(pr_section)
+if [[ -n "$pr_section_out" ]]; then
+  sep
+  printf "%s" "$pr_section_out"
 fi
 
 # Duration
@@ -132,7 +137,7 @@ fi
 
 echo ""
 
-# ── Line 2: Context + Burn + Cache ─────────────────────────────────────────
+# ── Line 2: Context + Burn + Cache + MCP ───────────────────────────────────
 # Context bar
 clr_ctx; printf "%s ctx " "$IC_CTX"; rst
 render_bar "$CTX_PCT" 10 c_sky
@@ -150,9 +155,21 @@ $burn_color; printf "%s" "$IC_BURN"; rst
 sep
 clr_cache; printf "%s cache %d%%" "$IC_CACHE" "$CACHE_RATIO"; rst
 
+# MCP health
+if (( MCP_TOTAL > 0 )); then
+  sep
+  if (( MCP_HEALTHY == MCP_TOTAL )); then
+    clr_mcp_ok
+  else
+    clr_mcp_bad; bld
+  fi
+  printf "%s %d/%d" "$IC_MCP" "$MCP_HEALTHY" "$MCP_TOTAL"
+  rst
+fi
+
 echo ""
 
-# ── Line 3: Rate Limits + MCP + PR ──────────────────────────────────────────
+# ── Lines 3-4: Rate Limits (stacked) ──────────────────────────────────────
 # 5h rate limit
 if [[ -n "$RATE_5H_PCT" ]]; then
   # Apply weight display
@@ -167,36 +184,16 @@ if [[ -n "$RATE_5H_PCT" ]]; then
   if [[ -n "$RATE_5H_RESET" ]]; then
     dim; clr_dim; printf " resets %s" "$(fmt_reset "$RATE_5H_RESET")"; rst
   fi
+  echo ""
 fi
 
 # 7d rate limit
 if [[ -n "$RATE_7D_PCT" ]]; then
-  sep
-  clr_rate7d; printf "7d "; rst
+  clr_rate7d; printf "%s 7d " "$IC_RATE"; rst
   render_bar "$RATE_7D_PCT" 10 c_lavender
   clr_dim; printf " %d%%" "$RATE_7D_PCT"; rst
   if [[ -n "$RATE_7D_RESET" ]]; then
     dim; clr_dim; printf " resets %s" "$(fmt_reset "$RATE_7D_RESET")"; rst
   fi
+  echo ""
 fi
-
-# MCP health
-if (( MCP_TOTAL > 0 )); then
-  sep
-  if (( MCP_HEALTHY == MCP_TOTAL )); then
-    clr_mcp_ok
-  else
-    clr_mcp_bad; bld
-  fi
-  printf "%s %d/%d" "$IC_MCP" "$MCP_HEALTHY" "$MCP_TOTAL"
-  rst
-fi
-
-# PR status
-pr_section_out=$(pr_section)
-if [[ -n "$pr_section_out" ]]; then
-  sep
-  printf "%s" "$pr_section_out"
-fi
-
-echo ""

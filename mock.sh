@@ -54,7 +54,7 @@ AGENT=""            # set to name to test
 # ── Render ───────────────────────────────────────────────────────────────────
 echo ""
 
-# ── Line 1: Identity + Git + Sync ───────────────────────────────────────────
+# ── Line 1: Identity + Git ──────────────────────────────────────────────────
 clr_model; bld; printf "%s %s" "$IC_MODEL" "$MODEL"; rst
 clr_thinking; printf " · %s" "$THINKING"; rst
 
@@ -65,17 +65,17 @@ if [[ -n "$AGENT" ]]; then
   sep; c_sapphire; printf "agent:%s" "$AGENT"; rst
 fi
 
+# Lines changed
+sep
+clr_add; printf "%s +%d" "$IC_DIFF" "$LINES_ADD"; rst
+clr_del; printf " -%d" "$LINES_DEL"; rst
+
 # Branch
 sep
 clr_branch; printf "%s %s" "$IC_BRANCH" "$BRANCH"; rst
 if (( DIRTY > 0 )); then c_peach; printf " %s%d" "$IC_DIRTY" "$DIRTY"; rst; fi
 if (( STAGED > 0 )); then c_green; printf " %s%d" "$IC_STAGED" "$STAGED"; rst; fi
 if (( UNTRACKED > 0 )); then c_overlay0; printf " %s%d" "$IC_UNTRACKED" "$UNTRACKED"; rst; fi
-
-# Lines changed
-sep
-clr_add; printf "%s +%d" "$IC_DIFF" "$LINES_ADD"; rst
-clr_del; printf " -%d" "$LINES_DEL"; rst
 
 # Sync status
 sep
@@ -99,6 +99,21 @@ if (( STASH > 0 )); then
   sep; clr_stash; printf "%s %d stashed" "$IC_STASH" "$STASH"; rst
 fi
 
+# PR
+if [[ -n "$PR_NUM" ]]; then
+  sep
+  clr_pr; printf "%s #%d" "$IC_PR" "$PR_NUM"; rst
+  case "$PR_STATE" in
+    OPEN)   c_green; printf " OPEN"; rst ;;
+    MERGED) c_mauve; printf " MERGED"; rst ;;
+    CLOSED) c_red; printf " CLOSED"; rst ;;
+  esac
+  if (( PR_CHECKS_TOTAL > 0 )); then
+    if (( PR_CHECKS_PASS == PR_CHECKS_TOTAL )); then c_green; else c_yellow; fi
+    printf " %s%d/%d" "$IC_SYNCED" "$PR_CHECKS_PASS" "$PR_CHECKS_TOTAL"; rst
+  fi
+fi
+
 # Duration
 sep; clr_duration; printf "%s %s" "$IC_CLOCK" "$DURATION"; rst
 
@@ -109,7 +124,7 @@ fi
 
 echo ""
 
-# ── Line 2: Context + Burn + Cache ─────────────────────────────────────────
+# ── Line 2: Context + Burn + Cache + MCP ───────────────────────────────────
 clr_ctx; printf "%s ctx " "$IC_CTX"; rst
 render_bar "$CTX_PCT" 10 c_sky
 clr_dim; printf " %d%%" "$CTX_PCT"; rst
@@ -126,39 +141,25 @@ printf "%s" "$IC_BURN"; rst
 sep
 clr_cache; printf "%s cache %d%%" "$IC_CACHE" "$CACHE_PCT"; rst
 
+# MCP
+if (( MCP_TOTAL > 0 )); then
+  sep
+  if (( MCP_OK == MCP_TOTAL )); then clr_mcp_ok; else clr_mcp_bad; bld; fi
+  printf "%s %d/%d" "$IC_MCP" "$MCP_OK" "$MCP_TOTAL"; rst
+fi
+
 echo ""
 
-# ── Line 3: Rate Limits + MCP + PR ──────────────────────────────────────────
+# ── Lines 3-4: Rate Limits (stacked) ──────────────────────────────────────
 clr_rate5h; printf "%s 5h " "$IC_RATE"; rst
 render_bar "$RATE_5H" 10 c_teal
 clr_dim; printf " %d%%" "$RATE_5H"; rst
 dim; clr_dim; printf " resets %s" "$RATE_5H_RESET"; rst
+echo ""
 
-sep
-clr_rate7d; printf "7d "; rst
+clr_rate7d; printf "%s 7d " "$IC_RATE"; rst
 render_bar "$RATE_7D" 10 c_lavender
 clr_dim; printf " %d%%" "$RATE_7D"; rst
 dim; clr_dim; printf " resets %s" "$RATE_7D_RESET"; rst
 
-# MCP
-sep
-if (( MCP_OK == MCP_TOTAL )); then clr_mcp_ok; else clr_mcp_bad; bld; fi
-printf "%s %d/%d" "$IC_MCP" "$MCP_OK" "$MCP_TOTAL"; rst
-
-# PR
-if [[ -n "$PR_NUM" ]]; then
-  sep
-  clr_pr; printf "%s #%d" "$IC_PR" "$PR_NUM"; rst
-  case "$PR_STATE" in
-    OPEN)   c_green; printf " OPEN"; rst ;;
-    MERGED) c_mauve; printf " MERGED"; rst ;;
-    CLOSED) c_red; printf " CLOSED"; rst ;;
-  esac
-  if (( PR_CHECKS_TOTAL > 0 )); then
-    if (( PR_CHECKS_PASS == PR_CHECKS_TOTAL )); then c_green; else c_yellow; fi
-    printf " %s%d/%d" "$IC_SYNCED" "$PR_CHECKS_PASS" "$PR_CHECKS_TOTAL"; rst
-  fi
-fi
-
-echo ""
 echo ""
