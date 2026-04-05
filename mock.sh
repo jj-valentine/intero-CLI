@@ -67,7 +67,7 @@ fi
 
 # Lines changed
 sep
-clr_add; printf "%s +%d" "$IC_DIFF" "$LINES_ADD"; rst
+clr_add; printf "+%d" "$LINES_ADD"; rst
 clr_del; printf " -%d" "$LINES_DEL"; rst
 
 # Branch
@@ -99,9 +99,9 @@ if (( STASH > 0 )); then
   sep; clr_stash; printf "%s %d stashed" "$IC_STASH" "$STASH"; rst
 fi
 
-# PR
+# PR (always show)
+sep
 if [[ -n "$PR_NUM" ]]; then
-  sep
   clr_pr; printf "%s #%d" "$IC_PR" "$PR_NUM"; rst
   case "$PR_STATE" in
     OPEN)   c_green; printf " OPEN"; rst ;;
@@ -112,6 +112,8 @@ if [[ -n "$PR_NUM" ]]; then
     if (( PR_CHECKS_PASS == PR_CHECKS_TOTAL )); then c_green; else c_yellow; fi
     printf " %s%d/%d" "$IC_SYNCED" "$PR_CHECKS_PASS" "$PR_CHECKS_TOTAL"; rst
   fi
+else
+  clr_dim; printf "%s no PR" "$IC_PR"; rst
 fi
 
 # Duration
@@ -136,17 +138,15 @@ case "$BURN_LEVEL" in
   mid)  clr_burn_mid ;;
   *)    clr_burn_low ;;
 esac
-printf "%s" "$IC_BURN"; rst
+printf "%s 1.2k/m" "$IC_BURN"; rst
 
 sep
 clr_cache; printf "%s cache %d%%" "$IC_CACHE" "$CACHE_PCT"; rst
 
-# MCP
-if (( MCP_TOTAL > 0 )); then
-  sep
-  if (( MCP_OK == MCP_TOTAL )); then clr_mcp_ok; else clr_mcp_bad; bld; fi
-  printf "%s %d/%d" "$IC_MCP" "$MCP_OK" "$MCP_TOTAL"; rst
-fi
+# MCP (always show)
+sep
+if (( MCP_OK == MCP_TOTAL )); then clr_mcp_ok; else clr_mcp_bad; bld; fi
+printf "%s %d/%d" "$IC_MCP" "$MCP_OK" "$MCP_TOTAL"; rst
 
 echo ""
 
