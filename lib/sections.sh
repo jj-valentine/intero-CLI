@@ -135,5 +135,5 @@ render_line() {
       fi
     fi
   done
-  echo ""
+  (( first )) || echo ""
 }

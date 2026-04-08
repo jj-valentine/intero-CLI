@@ -98,7 +98,12 @@ printf '\e]0;%s\a' "$TAB_TITLE" >/dev/tty 2>/dev/null
 : "${INTERO_LINE4:=rate7d}"
 
 # ── Render ──────────────────────────────────────────────────────────────────
+# Word-split intentionally: each variable is a space-separated list of section names.
+# shellcheck disable=SC2086
 render_line $INTERO_LINE1
+# shellcheck disable=SC2086
 render_line $INTERO_LINE2
+# shellcheck disable=SC2086
 render_line $INTERO_LINE3
+# shellcheck disable=SC2086
 render_line $INTERO_LINE4
