@@ -25,3 +25,18 @@ INTERO_BAR_STYLE="parallelogram"
 # INTERO_SHOW_CACHE=1
 # INTERO_SHOW_BURN=1
 # INTERO_SHOW_WEIGHTED=1
+
+# ── Layout ──────────────────────────────────────────────────────────────────
+# Each line is an array of section names. Sections render left-to-right
+# with │ separators. Reorder, move between lines, or remove to customize.
+# Empty/missing sections are silently skipped.
+#
+# Available sections:
+#   model worktree agent lines branch sync pr duration peak
+#   context burn cache mcp
+#   rate5h rate7d
+
+INTERO_LINE1="model worktree agent lines branch sync pr duration peak"
+INTERO_LINE2="context burn cache mcp"
+INTERO_LINE3="rate5h"
+INTERO_LINE4="rate7d"

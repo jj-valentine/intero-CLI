@@ -197,7 +197,7 @@ git_branch_section() {
 
   # File state indicators
   if (( GIT_DIRTY > 0 )); then
-    c_peach; printf " %s%d" "$IC_DIRTY" "$GIT_DIRTY"; rst
+    c_yellow; printf " %s%d" "$IC_DIRTY" "$GIT_DIRTY"; rst
   fi
   if (( GIT_STAGED > 0 )); then
     c_green; printf " %s%d" "$IC_STAGED" "$GIT_STAGED"; rst

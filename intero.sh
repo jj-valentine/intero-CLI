@@ -14,6 +14,7 @@ source "$INTERO_DIR/lib/format.sh"
 source "$INTERO_DIR/lib/git.sh"
 source "$INTERO_DIR/lib/pr.sh"
 source "$INTERO_DIR/lib/peak.sh"
+source "$INTERO_DIR/lib/sections.sh"
 
 # Source user config if present
 [[ -f "$INTERO_DIR/config.sh" ]] && source "$INTERO_DIR/config.sh"
@@ -90,111 +91,14 @@ TAB_TITLE="$TAB_DIR"
 [[ -n "$TAB_SUMMARY" ]] && TAB_TITLE="$TAB_TITLE · $TAB_SUMMARY"
 printf '\e]0;%s\a' "$TAB_TITLE" >/dev/tty 2>/dev/null
 
-# ── Line 1: Identity + Git ──────────────────────────────────────────────────
-# Model + thinking
-clr_model; bld; printf "%s %s" "$IC_MODEL" "$MODEL_NAME"; rst
-if [[ -n "$THINKING_EFFORT" ]]; then
-  clr_thinking; printf " · %s" "$THINKING_EFFORT"; rst
-fi
+# ── Default layout (override in config.sh) ──────────────────────────────────
+: "${INTERO_LINE1:=model worktree agent lines branch sync pr duration peak}"
+: "${INTERO_LINE2:=context burn cache mcp}"
+: "${INTERO_LINE3:=rate5h}"
+: "${INTERO_LINE4:=rate7d}"
 
-# Worktree indicator
-if [[ -n "$WORKTREE_NAME" ]]; then
-  sep; c_teal; printf "%s %s" "$IC_WORKTREE" "$WORKTREE_NAME"; rst
-fi
-
-# Agent indicator
-if [[ -n "$AGENT_NAME" ]]; then
-  sep; c_sapphire; printf "agent:%s" "$AGENT_NAME"; rst
-fi
-
-# Lines changed
-sep
-clr_add; printf "+%d" "$LINES_ADD"; rst
-clr_del; printf " -%d" "$LINES_DEL"; rst
-
-# Git branch
-if (( GIT_IN_REPO )); then
-  sep; git_branch_section
-
-  # Sync status
-  sep; git_sync_status
-fi
-
-# PR status (always show placeholder)
-sep
-pr_section_out=$(pr_section)
-if [[ -n "$pr_section_out" ]]; then
-  printf "%s" "$pr_section_out"
-else
-  clr_dim; printf "%s no PR" "$IC_PR"; rst
-fi
-
-# Duration
-sep; clr_duration; printf "%s %s" "$IC_CLOCK" "$(fmt_duration "$DURATION_MS")"; rst
-
-# Peak hours warning
-if (( PEAK_ACTIVE )); then
-  sep; peak_section
-fi
-
-echo ""
-
-# ── Line 2: Context + Burn + Cache + MCP ───────────────────────────────────
-# Context bar
-clr_ctx; printf "%s ctx " "$IC_CTX"; rst
-render_bar "$CTX_PCT" 10 c_sky
-clr_dim; printf " %d%%" "$CTX_PCT"; rst
-dim; clr_dim; printf " %s/%s" "$(fmt_tokens "$TOTAL_TOKENS")" "$(fmt_tokens "$CTX_SIZE")"; rst
-
-# Burn rate
-sep
-burn_color=clr_burn_low
-(( BURN_RATE > 2000 )) && burn_color=clr_burn_mid
-(( BURN_RATE > 5000 )) && burn_color=clr_burn_hi
-$burn_color; printf "%s %s/m" "$IC_BURN" "$(fmt_tokens "$BURN_RATE")"; rst
-
-# Cache ratio
-sep
-clr_cache; printf "%s  cache %d%%" "$IC_CACHE" "$CACHE_RATIO"; rst
-
-# MCP health (always show)
-sep
-if (( MCP_TOTAL > 0 )); then
-  if (( MCP_HEALTHY == MCP_TOTAL )); then
-    clr_mcp_ok
-  else
-    clr_mcp_bad; bld
-  fi
-  printf "%s  %d/%d" "$IC_MCP" "$MCP_HEALTHY" "$MCP_TOTAL"
-else
-  clr_dim; printf "%s  0" "$IC_MCP"
-fi
-rst
-
-echo ""
-
-# ── Lines 3-4: Rate Limits (stacked, always shown) ────────────────────────
-# 5h rate limit
-display_5h=${RATE_5H_PCT:-0}
-if (( WEIGHT > 1 && display_5h > 0 )); then
-  display_5h=$((display_5h * WEIGHT / 5))
-  (( display_5h > 100 )) && display_5h=100
-fi
-clr_rate5h; printf "%s 5h " "$IC_RATE"; rst
-render_bar "$display_5h" 10 c_teal
-clr_dim; printf " %d%%" "$display_5h"; rst
-if [[ -n "$RATE_5H_RESET" ]]; then
-  dim; clr_dim; printf " resets %s" "$(fmt_reset "$RATE_5H_RESET")"; rst
-fi
-echo ""
-
-# 7d rate limit
-display_7d=${RATE_7D_PCT:-0}
-clr_rate7d; printf "%s 7d " "$IC_RATE"; rst
-render_bar "$display_7d" 10 c_lavender
-clr_dim; printf " %d%%" "$display_7d"; rst
-if [[ -n "$RATE_7D_RESET" ]]; then
-  dim; clr_dim; printf " resets %s" "$(fmt_reset "$RATE_7D_RESET")"; rst
-fi
-  echo ""
-fi
+# ── Render ──────────────────────────────────────────────────────────────────
+render_line $INTERO_LINE1
+render_line $INTERO_LINE2
+render_line $INTERO_LINE3
+render_line $INTERO_LINE4
