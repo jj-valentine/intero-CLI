@@ -190,7 +190,9 @@ git_branch_section() {
   if [[ -n "$GIT_REMOTE_URL" ]]; then
     printf '\e]8;;%s\e\\' "$GIT_REMOTE_URL"
   fi
-  clr_branch; printf "%s %s" "$IC_BRANCH" "$GIT_BRANCH"; rst
+  local branch_icon="$IC_BRANCH"
+  [[ -n "$WORKTREE_NAME" ]] && branch_icon="$IC_WORKTREE"
+  clr_branch; printf "%s %s" "$branch_icon" "$GIT_BRANCH"; rst
   if [[ -n "$GIT_REMOTE_URL" ]]; then
     printf '\e]8;;\e\\'
   fi
@@ -203,6 +205,6 @@ git_branch_section() {
     c_green; printf " %s%d" "$IC_STAGED" "$GIT_STAGED"; rst
   fi
   if (( GIT_UNTRACKED > 0 )); then
-    c_overlay0; printf " %s%d" "$IC_UNTRACKED" "$GIT_UNTRACKED"; rst
+    c_blue; printf " %s%d" "$IC_UNTRACKED" "$GIT_UNTRACKED"; rst
   fi
 }

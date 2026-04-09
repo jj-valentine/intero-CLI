@@ -7,6 +7,7 @@ bg()  { printf "\033[48;2;%d;%d;%dm" "$1" "$2" "$3"; }
 rst() { printf "\033[0m"; }
 bld() { printf "\033[1m"; }
 dim() { printf "\033[2m"; }
+blk() { printf "\033[5m"; }
 
 # ── Catppuccin Mocha accents ─────────────────────────────────────────────────
 c_rosewater() { fg 245 224 220; }  # #f5e0dc

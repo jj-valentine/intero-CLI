@@ -59,6 +59,7 @@ AGENT_NAME=$(jq_get '.agent.name')
 
 # ── Derived values ───────────────────────────────────────────────────────────
 TOTAL_TOKENS=$((CTX_INPUT + CTX_OUTPUT))
+WINDOW_TOKENS=$((CACHE_INPUT + CACHE_CREATE + CACHE_READ))
 BURN_RATE=$(calc_burn_rate "$TOTAL_TOKENS" "$DURATION_MS")
 CACHE_RATIO=$(calc_cache_ratio "$CACHE_READ" "$CACHE_CREATE" "$CACHE_INPUT")
 WEIGHT=$(model_weight "$MODEL_ID")
@@ -92,9 +93,9 @@ TAB_TITLE="$TAB_DIR"
 printf '\e]0;%s\a' "$TAB_TITLE" >/dev/tty 2>/dev/null
 
 # ── Default layout (override in config.sh) ──────────────────────────────────
-: "${INTERO_LINE1:=model worktree agent lines branch sync pr duration peak}"
-: "${INTERO_LINE2:=context burn cache mcp}"
-: "${INTERO_LINE3:=rate5h}"
+: "${INTERO_LINE1:=model agent lines branch sync pr}"
+: "${INTERO_LINE2:=context tokens burn cache duration peak}"
+: "${INTERO_LINE3:=rate5h mcp}"
 : "${INTERO_LINE4:=rate7d}"
 
 # ── Render ──────────────────────────────────────────────────────────────────
