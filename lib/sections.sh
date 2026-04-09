@@ -59,6 +59,32 @@ render_pr() {
   fi
 }
 
+render_git() {
+  if (( ! GIT_IN_REPO )); then
+    clr_dim; printf "%s" "$IC_BRANCH"; rst
+    return
+  fi
+
+  # Branch (always present in a repo)
+  git_branch_section
+
+  # Sync status
+  local sync_out
+  sync_out=$(git_sync_status 2>/dev/null)
+  if [[ -n "$sync_out" ]]; then
+    dot; printf "%s" "$sync_out"
+  fi
+
+  # PR
+  local pr_out
+  pr_out=$(pr_section 2>/dev/null)
+  if [[ -n "$pr_out" ]]; then
+    dot; printf "%s" "$pr_out"
+  else
+    dot; clr_dim; printf "%s no PR" "$IC_PR"; rst
+  fi
+}
+
 render_duration() {
   clr_duration; printf "%s %s" "$IC_CLOCK" "$(fmt_duration "$DURATION_MS")"; rst
 }
@@ -81,7 +107,7 @@ render_context() {
 }
 
 render_tokens() {
-  clr_dim; printf "%s session" "$(fmt_tokens "$TOTAL_TOKENS")"; rst
+  clr_dim; printf "%s" "$(fmt_tokens "$TOTAL_TOKENS")"; rst
 }
 
 render_burn() {
@@ -92,7 +118,7 @@ render_burn() {
 }
 
 render_cache() {
-  clr_cache; printf "%s  cache %d%%" "$IC_CACHE" "$CACHE_RATIO"; rst
+  clr_cache; printf "%s cache %d%%" "$IC_CACHE" "$CACHE_RATIO"; rst
 }
 
 render_mcp() {
@@ -102,9 +128,9 @@ render_mcp() {
     else
       clr_mcp_bad; bld
     fi
-    printf "%s  %d/%d" "$IC_MCP" "$MCP_HEALTHY" "$MCP_TOTAL"
+    printf "%s %d/%d" "$IC_MCP" "$MCP_HEALTHY" "$MCP_TOTAL"
   else
-    clr_dim; printf "%s  0" "$IC_MCP"
+    clr_dim; printf "%s 0" "$IC_MCP"
   fi
   rst
 }

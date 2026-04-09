@@ -58,8 +58,21 @@ WORKTREE_NAME=$(jq_get '.worktree.name')
 AGENT_NAME=$(jq_get '.agent.name')
 
 # ── Derived values ───────────────────────────────────────────────────────────
-TOTAL_TOKENS=$((CTX_INPUT + CTX_OUTPUT))
 WINDOW_TOKENS=$((CACHE_INPUT + CACHE_CREATE + CACHE_READ))
+
+# Cumulative session tokens — survives context compaction
+TOKEN_CACHE="/tmp/intero-tokens-${SESSION_ID}"
+TOKEN_ACC=0; PREV_WINDOW=0
+[[ -f "$TOKEN_CACHE" ]] && source "$TOKEN_CACHE"
+if (( WINDOW_TOKENS < PREV_WINDOW )); then
+  TOKEN_ACC=$((TOKEN_ACC + PREV_WINDOW))
+fi
+TOTAL_TOKENS=$((TOKEN_ACC + WINDOW_TOKENS + CTX_OUTPUT))
+cat > "$TOKEN_CACHE" <<TOK
+TOKEN_ACC=$TOKEN_ACC
+PREV_WINDOW=$WINDOW_TOKENS
+TOK
+
 BURN_RATE=$(calc_burn_rate "$TOTAL_TOKENS" "$DURATION_MS")
 CACHE_RATIO=$(calc_cache_ratio "$CACHE_READ" "$CACHE_CREATE" "$CACHE_INPUT")
 WEIGHT=$(model_weight "$MODEL_ID")
@@ -93,8 +106,8 @@ TAB_TITLE="$TAB_DIR"
 printf '\e]0;%s\a' "$TAB_TITLE" >/dev/tty 2>/dev/null
 
 # ── Default layout (override in config.sh) ──────────────────────────────────
-: "${INTERO_LINE1:=model agent lines branch sync pr}"
-: "${INTERO_LINE2:=context tokens burn cache duration peak}"
+: "${INTERO_LINE1:=model agent lines git}"
+: "${INTERO_LINE2:=context cache tokens burn duration peak}"
 : "${INTERO_LINE3:=rate5h mcp}"
 : "${INTERO_LINE4:=rate7d}"
 

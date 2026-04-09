@@ -67,3 +67,4 @@ clr_op()       { c_mauve; }
 
 # ── Separator ────────────────────────────────────────────────────────────────
 sep() { clr_sep; printf " │ "; rst; }
+dot() { clr_sep; printf " · "; rst; }
