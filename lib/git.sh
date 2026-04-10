@@ -114,6 +114,29 @@ git_collect() {
   GIT_HAS_UPSTREAM=1
   git -C "$cwd" rev-parse --abbrev-ref "@{upstream}" &>/dev/null || GIT_HAS_UPSTREAM=0
 
+  # Branch safety: gone + merged detection
+  GIT_GONE=0
+  GIT_MERGED=0
+  if [[ "$GIT_BRANCH" != "main" && "$GIT_BRANCH" != "master" ]]; then
+    git -C "$cwd" branch -vv --list "$GIT_BRANCH" 2>/dev/null | grep -q '\[.*: gone\]' && GIT_GONE=1
+    # Resolve default branch (not always "main")
+    local default_branch
+    default_branch=$(git -C "$cwd" symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's|refs/remotes/origin/||')
+    default_branch=${default_branch:-main}
+    # Check merge via git (fast-forward/true merge) OR gh (squash/rebase merge)
+    git -C "$cwd" branch --merged "$default_branch" --list "$GIT_BRANCH" 2>/dev/null | grep -q . && GIT_MERGED=1
+    if (( ! GIT_MERGED )); then
+      gh pr list --repo "$GIT_REMOTE_URL" --head "$GIT_BRANCH" --state merged --json number --jq '.[0].number' 2>/dev/null | grep -q . && GIT_MERGED=1
+    fi
+    # Check if remote branch still exists
+    GIT_REMOTE_BRANCH_EXISTS=0
+    git -C "$cwd" ls-remote --heads origin "$GIT_BRANCH" 2>/dev/null | grep -q . && GIT_REMOTE_BRANCH_EXISTS=1
+  else
+    GIT_GONE=0
+    GIT_MERGED=0
+    GIT_REMOTE_BRANCH_EXISTS=0
+  fi
+
   # Write cache
   cat > "$cache_file" <<CACHE
 GIT_BRANCH="$GIT_BRANCH"
@@ -127,6 +150,9 @@ GIT_OP="$GIT_OP"
 GIT_LAST_FETCH=$GIT_LAST_FETCH
 GIT_REMOTE_URL="$GIT_REMOTE_URL"
 GIT_HAS_UPSTREAM=$GIT_HAS_UPSTREAM
+GIT_GONE=$GIT_GONE
+GIT_MERGED=$GIT_MERGED
+GIT_REMOTE_BRANCH_EXISTS=$GIT_REMOTE_BRANCH_EXISTS
 GIT_IN_REPO=1
 CACHE
 }
@@ -140,6 +166,19 @@ git_sync_status() {
   # Operation takes priority
   if [[ -n "$GIT_OP" ]]; then
     clr_op; bld; printf "%s" "$GIT_OP"; rst
+    return
+  fi
+
+  # Branch safety: gone/merged takes priority over normal sync
+  if (( GIT_GONE )); then
+    clr_sync_bad; printf "%s gone — pull main" "$IC_WARNING"; rst
+    return
+  fi
+  if (( GIT_MERGED )); then
+    c_mauve; printf "%s merged" "$IC_SYNCED"; rst
+    if (( GIT_REMOTE_BRANCH_EXISTS )); then
+      clr_dim; printf " · remote"; rst
+    fi
     return
   fi
 
@@ -176,7 +215,7 @@ git_sync_status() {
 
   # Stash indicator (appended)
   if (( GIT_STASH > 0 )); then
-    sep
+    dot
     clr_stash; printf "%s %d stashed" "$IC_STASH" "$GIT_STASH"; rst
   fi
 }
