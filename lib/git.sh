@@ -119,10 +119,14 @@ git_collect() {
   GIT_MERGED=0
   if [[ "$GIT_BRANCH" != "main" && "$GIT_BRANCH" != "master" ]]; then
     git -C "$cwd" branch -vv --list "$GIT_BRANCH" 2>/dev/null | grep -q '\[.*: gone\]' && GIT_GONE=1
+    # Resolve default branch (not always "main")
+    local default_branch
+    default_branch=$(git -C "$cwd" symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's|refs/remotes/origin/||')
+    default_branch=${default_branch:-main}
     # Check merge via git (fast-forward/true merge) OR gh (squash/rebase merge)
-    git -C "$cwd" branch --merged main --list "$GIT_BRANCH" 2>/dev/null | grep -q . && GIT_MERGED=1
+    git -C "$cwd" branch --merged "$default_branch" --list "$GIT_BRANCH" 2>/dev/null | grep -q . && GIT_MERGED=1
     if (( ! GIT_MERGED )); then
-      gh pr list --repo "$(git -C "$cwd" remote get-url origin 2>/dev/null)" --head "$GIT_BRANCH" --state merged --json number --jq '.[0].number' 2>/dev/null | grep -q . && GIT_MERGED=1
+      gh pr list --repo "$GIT_REMOTE_URL" --head "$GIT_BRANCH" --state merged --json number --jq '.[0].number' 2>/dev/null | grep -q . && GIT_MERGED=1
     fi
     # Check if remote branch still exists
     GIT_REMOTE_BRANCH_EXISTS=0

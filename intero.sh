@@ -61,17 +61,20 @@ AGENT_NAME=$(jq_get '.agent.name')
 WINDOW_TOKENS=$((CACHE_INPUT + CACHE_CREATE + CACHE_READ))
 
 # Cumulative session tokens — survives context compaction
-TOKEN_CACHE="/tmp/intero-tokens-${SESSION_ID}"
-TOKEN_ACC=0; PREV_WINDOW=0
-[[ -f "$TOKEN_CACHE" ]] && source "$TOKEN_CACHE"
-if (( WINDOW_TOKENS < PREV_WINDOW )); then
-  TOKEN_ACC=$((TOKEN_ACC + PREV_WINDOW))
-fi
-TOTAL_TOKENS=$((TOKEN_ACC + WINDOW_TOKENS + CTX_OUTPUT))
-cat > "$TOKEN_CACHE" <<TOK
+TOKEN_ACC=0; PREV_WINDOW=0; PREV_OUTPUT=0
+if [[ -n "$SESSION_ID" ]]; then
+  TOKEN_CACHE="/tmp/intero-tokens-${SESSION_ID}"
+  [[ -f "$TOKEN_CACHE" ]] && source "$TOKEN_CACHE"
+  if (( WINDOW_TOKENS < PREV_WINDOW )); then
+    TOKEN_ACC=$((TOKEN_ACC + PREV_WINDOW + PREV_OUTPUT))
+  fi
+  cat > "$TOKEN_CACHE" <<TOK
 TOKEN_ACC=$TOKEN_ACC
 PREV_WINDOW=$WINDOW_TOKENS
+PREV_OUTPUT=$CTX_OUTPUT
 TOK
+fi
+TOTAL_TOKENS=$((TOKEN_ACC + WINDOW_TOKENS + CTX_OUTPUT))
 
 BURN_RATE=$(calc_burn_rate "$TOTAL_TOKENS" "$DURATION_MS")
 CACHE_RATIO=$(calc_cache_ratio "$CACHE_READ" "$CACHE_CREATE" "$CACHE_INPUT")
