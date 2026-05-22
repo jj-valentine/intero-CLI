@@ -1,12 +1,13 @@
 #!/bin/bash
-# intero — Icons (Font Awesome + Octicons + Unicode)
-# Requires a Nerd Font (Hack NF, JetBrains Mono NF, etc.)
+# intero — Icons (Nerd Fonts v3 — Hack Nerd Font Mono)
 #
-# Ranges used (all universally bundled in Nerd Fonts v3):
-#   Font Awesome:  F000-F2FF
-#   Octicons:      F400-F532
-#   Powerline:     E0A0-E0D4
-#   Unicode:       standard codepoints
+# Ranges used:
+#   Font Awesome:      F000-F2FF
+#   Font Awesome Ext:  E200-E2A9
+#   Octicons:          F400-F533
+#   Material Design:   F0001-F1AF0
+#   Powerline:         E0A0-E0D4
+#   Unicode:           standard codepoints
 
 IC_MODEL=""       # F0E7  bolt
 IC_BRANCH=""      # E0A0  powerline branch
