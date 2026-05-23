@@ -34,11 +34,11 @@ INTERO_BAR_STYLE="parallelogram"
 # Empty/missing sections are silently skipped.
 #
 # Available sections:
-#   model worktree agent lines branch sync pr duration peak status
+#   model dir worktree agent lines branch sync pr duration peak status
 #   context burn cache mcp
 #   rate5h rate7d
 
-INTERO_LINE1="model agent lines branch sync pr"
+INTERO_LINE1="model dir agent lines branch sync pr"
 INTERO_LINE2="context tokens burn cache duration peak status"
 INTERO_LINE3="rate5h mcp"
 INTERO_LINE4="rate7d"

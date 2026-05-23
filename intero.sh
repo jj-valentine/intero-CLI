@@ -91,7 +91,7 @@ if [[ -f "$HOME/.claude/settings.json" ]]; then
 fi
 
 # ── Default layout (override in config.sh) ──────────────────────────────────
-: "${INTERO_LINE1:=model agent lines git}"
+: "${INTERO_LINE1:=model dir agent lines git}"
 : "${INTERO_LINE2:=context cache tokens burn duration peak status}"
 : "${INTERO_LINE3:=rate5h mcp}"
 : "${INTERO_LINE4:=rate7d}"

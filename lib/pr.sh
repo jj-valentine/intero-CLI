@@ -17,7 +17,7 @@ pr_collect() {
   local cache_file
   cache_file=$(_pr_cache_file "$cwd")
 
-  PR_NUMBER="" ; PR_STATE="" ; PR_TITLE="" ; PR_CHECKS_PASS=0 ; PR_CHECKS_TOTAL=0
+  PR_NUMBER="" ; PR_STATE="" ; PR_TITLE="" ; PR_URL="" ; PR_CHECKS_PASS=0 ; PR_CHECKS_TOTAL=0
 
   # Check cache
   if [[ -f "$cache_file" ]]; then
@@ -32,12 +32,13 @@ pr_collect() {
 
   # Fetch PR data (may fail if no PR exists)
   local pr_json
-  pr_json=$(gh pr view --json number,state,title,body 2>/dev/null) || {
+  pr_json=$(cd "$cwd" && gh pr view --json number,state,title,url,body 2>/dev/null) || {
     # No PR on current branch
     cat > "$cache_file" <<'CACHE'
 PR_NUMBER=""
 PR_STATE=""
 PR_TITLE=""
+PR_URL=""
 PR_CHECKS_PASS=0
 PR_CHECKS_TOTAL=0
 CACHE
@@ -47,6 +48,7 @@ CACHE
   PR_NUMBER=$(echo "$pr_json" | jq -r '.number // empty')
   PR_STATE=$(echo "$pr_json" | jq -r '.state // empty')
   PR_TITLE=$(echo "$pr_json" | jq -r '.title // empty')
+  PR_URL=$(echo "$pr_json" | jq -r '.url // empty')
 
   # Parse test plan checkboxes from PR body
   local body
@@ -61,6 +63,7 @@ CACHE
 PR_NUMBER="$PR_NUMBER"
 PR_STATE="$PR_STATE"
 PR_TITLE="$PR_TITLE"
+PR_URL="$PR_URL"
 PR_CHECKS_PASS=$PR_CHECKS_PASS
 PR_CHECKS_TOTAL=$PR_CHECKS_TOTAL
 CACHE
@@ -70,16 +73,16 @@ CACHE
 pr_section() {
   [[ -z "$PR_NUMBER" ]] && return
 
+  [[ -n "$PR_URL" ]] && printf '\e]8;;%s\e\\' "$PR_URL"
+
   clr_pr; printf "%s #%s" "$IC_PR" "$PR_NUMBER"; rst
 
-  # State color
   case "$PR_STATE" in
     OPEN)   c_green; printf " OPEN"; rst ;;
     MERGED) c_mauve; printf " MERGED"; rst ;;
     CLOSED) c_red; printf " CLOSED"; rst ;;
   esac
 
-  # Test checkboxes
   if (( PR_CHECKS_TOTAL > 0 )); then
     if (( PR_CHECKS_PASS == PR_CHECKS_TOTAL )); then
       c_green
@@ -89,4 +92,6 @@ pr_section() {
     printf " %s%d/%d" "$IC_SYNCED" "$PR_CHECKS_PASS" "$PR_CHECKS_TOTAL"
     rst
   fi
+
+  [[ -n "$PR_URL" ]] && printf '\e]8;;\e\\'
 }
