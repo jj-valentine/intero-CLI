@@ -6,6 +6,9 @@ set -o pipefail
 
 INTERO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+INTERO_CACHE_DIR="${TMPDIR:-${XDG_RUNTIME_DIR:-/tmp}}/intero"
+mkdir -p "$INTERO_CACHE_DIR" && chmod 700 "$INTERO_CACHE_DIR"
+
 # Source libraries
 source "$INTERO_DIR/lib/colors.sh"
 source "$INTERO_DIR/lib/icons.sh"
@@ -64,7 +67,7 @@ WINDOW_TOKENS=$((CACHE_INPUT + CACHE_CREATE + CACHE_READ))
 # Cumulative session tokens — survives context compaction
 TOKEN_ACC=0; PREV_WINDOW=0; PREV_OUTPUT=0
 if [[ -n "$SESSION_ID" ]]; then
-  TOKEN_CACHE="/tmp/intero-tokens-${SESSION_ID}"
+  TOKEN_CACHE="$INTERO_CACHE_DIR/tokens-${SESSION_ID}"
   [[ -f "$TOKEN_CACHE" ]] && source "$TOKEN_CACHE"
   if (( WINDOW_TOKENS < PREV_WINDOW )); then
     TOKEN_ACC=$((TOKEN_ACC + PREV_WINDOW + PREV_OUTPUT))
@@ -95,12 +98,12 @@ status_collect
 
 # MCP health (read from cache, don't probe)
 MCP_HEALTHY=0; MCP_TOTAL=0
-MCP_CACHE="/tmp/intero-mcp-${SESSION_ID}"
+MCP_CACHE="$INTERO_CACHE_DIR/mcp-${SESSION_ID}"
 [[ -f "$MCP_CACHE" ]] && source "$MCP_CACHE"
 
 # Tab summary
 TAB_SUMMARY=""
-TAB_FILE="/tmp/claude-tab-${SESSION_ID}"
+TAB_FILE="$INTERO_CACHE_DIR/tab-${SESSION_ID}"
 [[ -f "$TAB_FILE" ]] && TAB_SUMMARY=$(cat "$TAB_FILE")
 
 # ── Set tab title ────────────────────────────────────────────────────────────

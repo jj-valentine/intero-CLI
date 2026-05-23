@@ -7,7 +7,7 @@ _pr_cache_file() {
   local cwd=$1
   local key
   key=$(echo -n "$cwd" | md5 2>/dev/null || echo -n "$cwd" | md5sum 2>/dev/null | cut -d' ' -f1)
-  echo "/tmp/intero-pr-${key}"
+  echo "$INTERO_CACHE_DIR/pr-${key}"
 }
 
 # Collect PR data for current branch

@@ -2,7 +2,7 @@
 # intero — Claude platform status (via status.claude.com Statuspage API)
 
 : "${INTERO_STATUS_TTL:=120}"
-STATUS_CACHE="/tmp/intero-status"
+STATUS_CACHE="$INTERO_CACHE_DIR/status"
 STATUS_URL="https://status.claude.com/api/v2/summary.json"
 
 # Map Statuspage status string → severity int
