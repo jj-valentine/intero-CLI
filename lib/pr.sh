@@ -11,7 +11,7 @@ _pr_cache_file() {
 }
 
 # Collect PR data for current branch
-# Populates: PR_NUMBER, PR_STATE, PR_TITLE, PR_CHECKS_PASS, PR_CHECKS_TOTAL
+# Populates: PR_NUMBER, PR_STATE, PR_TITLE, PR_URL, PR_CHECKS_PASS, PR_CHECKS_TOTAL
 pr_collect() {
   local cwd=$1
   local cache_file

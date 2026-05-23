@@ -22,7 +22,11 @@ render_worktree() {
 
 render_dir() {
   local dir_name="${CWD##*/}"
-  clr_dir; printf "%s %s" "$IC_DIR" "$dir_name"; rst
+  if [[ -z "$dir_name" ]]; then
+    clr_dim; printf "%s" "$IC_DIR"; rst
+  else
+    clr_dir; printf "%s %s" "$IC_DIR" "$dir_name"; rst
+  fi
 }
 
 render_agent() {
