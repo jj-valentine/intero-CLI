@@ -33,3 +33,8 @@ IC_DIVERGED="⇅"
 IC_MERGING="MERGING"
 IC_REBASING="REBASING"
 IC_CHERRY="CHERRY-PICK"
+
+# Status section (Nerd Fonts v3)
+IC_STATUS_CC=$(printf '')       # E291  fae cc_cc (Creative Commons)
+IC_STATUS_API=$(printf '\UF109B')     # F109B md api
+IC_STATUS_API_OFF=$(printf '\UF1257') # F1257 md api_off

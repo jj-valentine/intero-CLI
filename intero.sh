@@ -14,6 +14,7 @@ source "$INTERO_DIR/lib/format.sh"
 source "$INTERO_DIR/lib/git.sh"
 source "$INTERO_DIR/lib/pr.sh"
 source "$INTERO_DIR/lib/peak.sh"
+source "$INTERO_DIR/lib/status.sh"
 source "$INTERO_DIR/lib/sections.sh"
 
 # Source user config if present
@@ -90,6 +91,7 @@ fi
 git_collect "$CWD"
 pr_collect "$CWD"
 peak_check
+status_collect
 
 # MCP health (read from cache, don't probe)
 MCP_HEALTHY=0; MCP_TOTAL=0
@@ -110,7 +112,7 @@ printf '\e]0;%s\a' "$TAB_TITLE" >/dev/tty 2>/dev/null
 
 # ── Default layout (override in config.sh) ──────────────────────────────────
 : "${INTERO_LINE1:=model agent lines git}"
-: "${INTERO_LINE2:=context cache tokens burn duration peak}"
+: "${INTERO_LINE2:=context cache tokens burn duration peak status}"
 : "${INTERO_LINE3:=rate5h mcp}"
 : "${INTERO_LINE4:=rate7d}"
 

@@ -64,6 +64,11 @@ clr_pr()       { c_periwinkle; }
 clr_peak()     { c_yellow; }
 clr_stash()    { c_overlay1; }
 clr_op()       { c_mauve; }
+clr_status_ok()   { c_green; }
+clr_status_warn() { c_yellow; }
+clr_status_bad()  { c_peach; }
+clr_status_crit() { c_red; bld; }
+clr_status_unk()  { c_overlay1; }
 
 # ── Separator ────────────────────────────────────────────────────────────────
 sep() { clr_sep; printf " │ "; rst; }

@@ -97,6 +97,34 @@ render_peak() {
   fi
 }
 
+color_for_severity() {
+  case "$1" in
+    0)  clr_status_ok ;;
+    1)  clr_status_warn ;;
+    2)  clr_status_bad ;;
+    3)  clr_status_crit ;;
+    *)  clr_status_unk ;;
+  esac
+}
+
+render_status() {
+  if [[ "${INTERO_STATUS_QUIET:-0}" == "1" ]] && (( STATUS_CC == 0 && STATUS_API == 0 )); then
+    return
+  fi
+  printf '\e]8;;https://status.claude.com/\e\\'
+  color_for_severity "$STATUS_CC"
+  printf "%s" "$IC_STATUS_CC"; rst
+  printf " "
+  color_for_severity "$STATUS_API"
+  if (( STATUS_API == 3 )); then
+    printf "%s" "$IC_STATUS_API_OFF"
+  else
+    printf "%s" "$IC_STATUS_API"
+  fi
+  rst
+  printf '\e]8;;\e\\'
+}
+
 # ── Line 2 sections ─────────────────────────────────────────────────────────
 
 render_context() {
