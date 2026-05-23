@@ -20,6 +20,15 @@ render_worktree() {
   fi
 }
 
+render_dir() {
+  local dir_name="${CWD##*/}"
+  if [[ -z "$dir_name" ]]; then
+    clr_dim; printf "%s" "$IC_DIR"; rst
+  else
+    clr_dir; printf "%s %s" "$IC_DIR" "$dir_name"; rst
+  fi
+}
+
 render_agent() {
   if [[ -n "$AGENT_NAME" ]]; then
     c_sapphire; printf "agent:%s" "$AGENT_NAME"; rst
