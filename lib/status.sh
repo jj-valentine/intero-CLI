@@ -41,12 +41,18 @@ CACHE
     return
   }
 
-  local cc_raw api_raw
+  local cc_raw
   cc_raw=$(echo "$json" | jq -r '.components[] | select(.name == "Claude Code") | .status' 2>/dev/null)
-  api_raw=$(echo "$json" | jq -r '[.components[] | select(.name | startswith("Claude API")) | .status] | sort | last // ""' 2>/dev/null)
-
   STATUS_CC=$(_status_severity "$cc_raw")
-  STATUS_API=$(_status_severity "$api_raw")
+
+  local api_lines s sev
+  api_lines=$(echo "$json" | jq -r '.components[] | select(.name | startswith("Claude API")) | .status' 2>/dev/null)
+  STATUS_API=-1
+  while IFS= read -r s; do
+    [[ -z "$s" ]] && continue
+    sev=$(_status_severity "$s")
+    (( sev > STATUS_API )) && STATUS_API=$sev
+  done <<< "$api_lines"
 
   cat > "$STATUS_CACHE" <<CACHE
 STATUS_CC=$STATUS_CC

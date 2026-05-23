@@ -90,11 +90,19 @@ if [[ -f "$HOME/.claude/settings.json" ]]; then
   THINKING_EFFORT=$(jq -r '.effortLevel // empty' "$HOME/.claude/settings.json" 2>/dev/null)
 fi
 
+# ── Default layout (override in config.sh) ──────────────────────────────────
+: "${INTERO_LINE1:=model agent lines git}"
+: "${INTERO_LINE2:=context cache tokens burn duration peak status}"
+: "${INTERO_LINE3:=rate5h mcp}"
+: "${INTERO_LINE4:=rate7d}"
+
 # ── Collect external data ────────────────────────────────────────────────────
 git_collect "$CWD"
 pr_collect "$CWD"
 peak_check
-status_collect
+if [[ "$INTERO_LINE1 $INTERO_LINE2 $INTERO_LINE3 $INTERO_LINE4" == *status* ]]; then
+  status_collect
+fi
 
 # MCP health (read from cache, don't probe)
 MCP_HEALTHY=0; MCP_TOTAL=0
@@ -112,12 +120,6 @@ TAB_TITLE="$TAB_DIR"
 [[ -n "$GIT_BRANCH" ]] && TAB_TITLE="$TAB_TITLE · $GIT_BRANCH"
 [[ -n "$TAB_SUMMARY" ]] && TAB_TITLE="$TAB_TITLE · $TAB_SUMMARY"
 printf '\e]0;%s\a' "$TAB_TITLE" >/dev/tty 2>/dev/null
-
-# ── Default layout (override in config.sh) ──────────────────────────────────
-: "${INTERO_LINE1:=model agent lines git}"
-: "${INTERO_LINE2:=context cache tokens burn duration peak status}"
-: "${INTERO_LINE3:=rate5h mcp}"
-: "${INTERO_LINE4:=rate7d}"
 
 # ── Render ──────────────────────────────────────────────────────────────────
 # Word-split intentionally: each variable is a space-separated list of section names.
