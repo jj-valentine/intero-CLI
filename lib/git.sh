@@ -9,7 +9,7 @@ _git_cache_key() {
 }
 
 _git_cache_file() {
-  echo "/tmp/intero-git-$(_git_cache_key "$1")"
+  echo "$INTERO_CACHE_DIR/git-$(_git_cache_key "$1")"
 }
 
 _git_cache_fresh() {

@@ -6,6 +6,9 @@ set -o pipefail
 
 INTERO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+INTERO_CACHE_DIR="${TMPDIR:-${XDG_RUNTIME_DIR:-/tmp}}/intero"
+mkdir -m 700 -p "$INTERO_CACHE_DIR"
+
 # Source libraries
 source "$INTERO_DIR/lib/colors.sh"
 source "$INTERO_DIR/lib/icons.sh"
@@ -14,6 +17,7 @@ source "$INTERO_DIR/lib/format.sh"
 source "$INTERO_DIR/lib/git.sh"
 source "$INTERO_DIR/lib/pr.sh"
 source "$INTERO_DIR/lib/peak.sh"
+source "$INTERO_DIR/lib/status.sh"
 source "$INTERO_DIR/lib/sections.sh"
 
 # Source user config if present
@@ -63,7 +67,7 @@ WINDOW_TOKENS=$((CACHE_INPUT + CACHE_CREATE + CACHE_READ))
 # Cumulative session tokens — survives context compaction
 TOKEN_ACC=0; PREV_WINDOW=0; PREV_OUTPUT=0
 if [[ -n "$SESSION_ID" ]]; then
-  TOKEN_CACHE="/tmp/intero-tokens-${SESSION_ID}"
+  TOKEN_CACHE="$INTERO_CACHE_DIR/tokens-${SESSION_ID}"
   [[ -f "$TOKEN_CACHE" ]] && source "$TOKEN_CACHE"
   if (( WINDOW_TOKENS < PREV_WINDOW )); then
     TOKEN_ACC=$((TOKEN_ACC + PREV_WINDOW + PREV_OUTPUT))
@@ -86,19 +90,28 @@ if [[ -f "$HOME/.claude/settings.json" ]]; then
   THINKING_EFFORT=$(jq -r '.effortLevel // empty' "$HOME/.claude/settings.json" 2>/dev/null)
 fi
 
+# ── Default layout (override in config.sh) ──────────────────────────────────
+: "${INTERO_LINE1:=model agent lines git}"
+: "${INTERO_LINE2:=context cache tokens burn duration peak status}"
+: "${INTERO_LINE3:=rate5h mcp}"
+: "${INTERO_LINE4:=rate7d}"
+
 # ── Collect external data ────────────────────────────────────────────────────
 git_collect "$CWD"
 pr_collect "$CWD"
 peak_check
+if [[ "$INTERO_LINE1 $INTERO_LINE2 $INTERO_LINE3 $INTERO_LINE4" == *status* ]]; then
+  status_collect
+fi
 
 # MCP health (read from cache, don't probe)
 MCP_HEALTHY=0; MCP_TOTAL=0
-MCP_CACHE="/tmp/intero-mcp-${SESSION_ID}"
+MCP_CACHE="$INTERO_CACHE_DIR/mcp-${SESSION_ID}"
 [[ -f "$MCP_CACHE" ]] && source "$MCP_CACHE"
 
 # Tab summary
 TAB_SUMMARY=""
-TAB_FILE="/tmp/claude-tab-${SESSION_ID}"
+TAB_FILE="$INTERO_CACHE_DIR/tab-${SESSION_ID}"
 [[ -f "$TAB_FILE" ]] && TAB_SUMMARY=$(cat "$TAB_FILE")
 
 # ── Set tab title ────────────────────────────────────────────────────────────
@@ -107,12 +120,6 @@ TAB_TITLE="$TAB_DIR"
 [[ -n "$GIT_BRANCH" ]] && TAB_TITLE="$TAB_TITLE · $GIT_BRANCH"
 [[ -n "$TAB_SUMMARY" ]] && TAB_TITLE="$TAB_TITLE · $TAB_SUMMARY"
 printf '\e]0;%s\a' "$TAB_TITLE" >/dev/tty 2>/dev/null
-
-# ── Default layout (override in config.sh) ──────────────────────────────────
-: "${INTERO_LINE1:=model agent lines git}"
-: "${INTERO_LINE2:=context cache tokens burn duration peak}"
-: "${INTERO_LINE3:=rate5h mcp}"
-: "${INTERO_LINE4:=rate7d}"
 
 # ── Render ──────────────────────────────────────────────────────────────────
 # Word-split intentionally: each variable is a space-separated list of section names.
