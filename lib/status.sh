@@ -43,7 +43,7 @@ CACHE
 
   local cc_raw api_raw
   cc_raw=$(echo "$json" | jq -r '.components[] | select(.name == "Claude Code") | .status' 2>/dev/null)
-  api_raw=$(echo "$json" | jq -r '.components[] | select(.name | startswith("Claude API")) | .status' 2>/dev/null)
+  api_raw=$(echo "$json" | jq -r '[.components[] | select(.name | startswith("Claude API")) | .status] | sort | last // ""' 2>/dev/null)
 
   STATUS_CC=$(_status_severity "$cc_raw")
   STATUS_API=$(_status_severity "$api_raw")

@@ -7,7 +7,7 @@ set -o pipefail
 INTERO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 INTERO_CACHE_DIR="${TMPDIR:-${XDG_RUNTIME_DIR:-/tmp}}/intero"
-mkdir -p "$INTERO_CACHE_DIR" && chmod 700 "$INTERO_CACHE_DIR"
+mkdir -m 700 -p "$INTERO_CACHE_DIR"
 
 # Source libraries
 source "$INTERO_DIR/lib/colors.sh"
