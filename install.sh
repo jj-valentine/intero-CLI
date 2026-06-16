@@ -43,8 +43,8 @@ fi
 chmod +x "$INTERO_DIR"/hooks/*.py 2>/dev/null || true
 if [[ -f "$SETTINGS" ]]; then
   tmp=$(mktemp)
-  jq --arg ups "python3 $INTERO_DIR/hooks/tab-summary.py" \
-     --arg ss  "python3 $INTERO_DIR/hooks/session-title.py" '
+  jq --arg ups "python3 '${INTERO_DIR}/hooks/tab-summary.py'" \
+     --arg ss  "python3 '${INTERO_DIR}/hooks/session-title.py'" '
     .env.CLAUDE_CODE_DISABLE_TERMINAL_TITLE = "1"
     | .hooks.UserPromptSubmit = (.hooks.UserPromptSubmit // [{hooks: []}])
     | .hooks.UserPromptSubmit[0].hooks =

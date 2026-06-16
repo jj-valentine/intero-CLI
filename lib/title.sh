@@ -1,6 +1,10 @@
 #!/bin/bash
 _title_path() {
-  echo "${PWD/$HOME/\~}"
+  if [[ "$PWD" == "$HOME"* ]]; then
+    echo "~${PWD#"$HOME"}"
+  else
+    echo "$PWD"
+  fi
 }
 
 _title_branch() {
