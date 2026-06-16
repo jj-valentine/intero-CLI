@@ -56,8 +56,9 @@ if [[ -f "$SETTINGS" ]]; then
         ((.hooks.SessionStart[0].hooks // [])
          | map(select((.command // "") | contains("session-title.py") | not))
          + [{type: "command", command: $ss}])
-  ' "$SETTINGS" > "$tmp" && mv "$tmp" "$SETTINGS"
-  echo "  ✓ Wired title hooks + CLAUDE_CODE_DISABLE_TERMINAL_TITLE=1 into settings.json"
+  ' "$SETTINGS" > "$tmp" && mv "$tmp" "$SETTINGS" \
+    && echo "  ✓ Wired title hooks + CLAUDE_CODE_DISABLE_TERMINAL_TITLE=1 into settings.json" \
+    || echo "  ✗ Failed to wire title hooks — check jq is installed and settings.json is valid"
 fi
 
 # Copy example config if no config exists
