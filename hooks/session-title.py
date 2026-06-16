@@ -6,6 +6,7 @@ Requires CLAUDE_CODE_DISABLE_TERMINAL_TITLE=1.
 """
 import json
 import os
+import re
 import subprocess
 import sys
 
@@ -36,6 +37,7 @@ if not title:
     home = os.path.expanduser("~")
     title = cwd.replace(home, "~") if cwd.startswith(home) else cwd
 
+title = re.sub(r'[\x00-\x1f\x7f]', '', title)[:200]
 print(json.dumps({
     "hookSpecificOutput": {
         "hookEventName": "SessionStart",

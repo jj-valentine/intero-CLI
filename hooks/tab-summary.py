@@ -17,6 +17,7 @@ Tunables (config.sh or env — env wins):
 """
 import json
 import os
+import re
 import subprocess
 import sys
 import time
@@ -30,8 +31,12 @@ prompt = data.get("prompt", "")
 if not prompt or not isinstance(prompt, str):
     ti = data.get("tool_input") or {}
     prompt = ti.get("content", "") or ti.get("message", "")
+if not isinstance(prompt, str):
+    prompt = ""
 
 session_id = data.get("session_id", "")
+if session_id:
+    session_id = re.sub(r'[^A-Za-z0-9._-]', '_', session_id)
 cwd = data.get("cwd", "") or os.getcwd()
 
 HOOK_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -83,9 +88,14 @@ def get_title():
     return cwd.replace(home, "~") if cwd.startswith(home) else cwd
 
 
+def _sanitize_title(s):
+    return re.sub(r'[\x00-\x1f\x7f]', '', s)[:200]
+
+
 def emit(title):
     if not title:
         return
+    title = _sanitize_title(title)
     print(json.dumps({
         "hookSpecificOutput": {
             "hookEventName": "UserPromptSubmit",
@@ -119,6 +129,8 @@ emit(get_title())
 if knob("INTERO_TAB_DISABLE_SUMMARY") in ("1", "true", "yes"):
     sys.exit(0)
 if not session_id:
+    sys.exit(0)
+if not cache_file:
     sys.exit(0)
 
 # ── Should we refresh? ─────────────────────────────────────────────────────
@@ -171,7 +183,8 @@ except ValueError:
 existing = ""
 if cache_file and os.path.exists(cache_file):
     try:
-        existing = open(cache_file).read().strip()
+        with open(cache_file) as f:
+            existing = f.read().strip()
     except Exception:
         pass
 

@@ -11,7 +11,7 @@ _title_branch() {
 }
 
 _title_summary() {
-  local session_id="$1"
+  local session_id="${1//[^A-Za-z0-9._-]/_}"
   [[ -z "$session_id" ]] && return
   local tmpdir="${TMPDIR:-${XDG_RUNTIME_DIR:-/tmp}}"
   local cache_file="$tmpdir/intero/tab-$session_id"
