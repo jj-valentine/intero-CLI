@@ -1,6 +1,6 @@
 #!/bin/bash
 _title_path() {
-  if [[ "$PWD" == "$HOME"* ]]; then
+  if [[ "$PWD" == "$HOME" || "$PWD" == "$HOME/"* ]]; then
     echo "~${PWD#"$HOME"}"
   else
     echo "$PWD"
