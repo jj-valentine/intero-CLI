@@ -172,6 +172,16 @@ if not model:
 # ── Resolve API key ────────────────────────────────────────────────────────
 api_key = os.environ.get("ANTHROPIC_API_KEY", "")
 if not api_key:
+    try:
+        r = subprocess.run(
+            ["security", "find-generic-password", "-s", "anthropic", "-w"],
+            capture_output=True, text=True, timeout=2,
+        )
+        if r.returncode == 0:
+            api_key = r.stdout.strip()
+    except Exception:
+        pass
+if not api_key:
     sys.exit(0)
 
 # ── Spawn detached curl ───────────────────────────────────────────────────
