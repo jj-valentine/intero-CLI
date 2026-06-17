@@ -73,4 +73,8 @@ clr_status_unk()  { c_overlay1; }
 
 # ── Separator ────────────────────────────────────────────────────────────────
 sep() { clr_sep; printf " │ "; rst; }
-dot() { clr_sep; printf " · "; rst; }
+dot() { clr_sep; bld; printf " · "; rst; }
+
+# ── Hyperlinks (OSC 8) ───────────────────────────────────────────────────────
+link_open()  { printf '\e]8;;%s\e\\' "$1"; }
+link_close() { printf '\e]8;;\e\\'; }

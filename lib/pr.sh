@@ -73,9 +73,9 @@ CACHE
 pr_section() {
   [[ -z "$PR_NUMBER" ]] && return
 
-  [[ -n "$PR_URL" ]] && printf '\e]8;;%s\e\\' "$PR_URL"
-
-  clr_pr; printf "%s #%s" "$IC_PR" "$PR_NUMBER"; rst
+  clr_pr; printf "%s " "$IC_PR"; rst
+  [[ -n "$PR_URL" ]] && link_open "$PR_URL"
+  clr_pr; printf "#%s" "$PR_NUMBER"; rst
 
   case "$PR_STATE" in
     OPEN)   c_green; printf " OPEN"; rst ;;
@@ -89,9 +89,9 @@ pr_section() {
     else
       c_yellow
     fi
-    printf " %s%d/%d" "$IC_SYNCED" "$PR_CHECKS_PASS" "$PR_CHECKS_TOTAL"
+    printf " %s%d∕%d" "$IC_SYNCED" "$PR_CHECKS_PASS" "$PR_CHECKS_TOTAL"
     rst
   fi
 
-  [[ -n "$PR_URL" ]] && printf '\e]8;;\e\\'
+  [[ -n "$PR_URL" ]] && link_close
 }

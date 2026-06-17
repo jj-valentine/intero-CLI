@@ -6,35 +6,49 @@
 # ── Line 1 sections ─────────────────────────────────────────────────────────
 
 render_model() {
-  clr_model; bld; printf "%s %s" "$IC_MODEL" "$MODEL_NAME"; rst
+  local url="https://platform.claude.com/docs/en/about-claude/models/overview"
+  clr_model; printf "%s " "$IC_MODEL"; rst
+  link_open "$url"
+  clr_model; bld; printf "%s" "$MODEL_NAME"; rst
+  link_close
   if [[ -n "$THINKING_EFFORT" ]]; then
-    clr_thinking; printf " · %s" "$THINKING_EFFORT"; rst
+    local eff="$THINKING_EFFORT"
+    [[ "$eff" == "medium" ]] && eff="med"
+    dot; clr_thinking; printf "%s" "$eff"; rst
   fi
 }
 
 render_worktree() {
   if [[ -n "$WORKTREE_NAME" ]]; then
-    c_teal; printf "%s %s" "$IC_WORKTREE" "$WORKTREE_NAME"; rst
+    c_teal; printf "%s  %s" "$IC_WORKTREE" "$WORKTREE_NAME"; rst
   else
-    clr_dim; printf "%s" "$IC_WORKTREE"; rst
+    clr_dim; printf "%s " "$IC_WORKTREE"; rst
   fi
 }
 
 render_dir() {
-  local dir_name="${CWD##*/}"
-  if [[ -z "$dir_name" ]]; then
-    clr_dim; printf "%s" "$IC_DIR"; rst
+  local dir_name icon="$IC_DIR" git_root=""
+  if (( GIT_IN_REPO )); then
+    git_root=$(git -C "$CWD" rev-parse --show-toplevel 2>/dev/null)
+    dir_name="${git_root##*/}"
+    [[ "$CWD" != "$git_root" ]] && icon="$IC_DIR_OPEN"
   else
-    clr_dir; printf "%s %s" "$IC_DIR" "$dir_name"; rst
+    dir_name="${CWD##*/}"
   fi
-}
+  (( GIT_IS_WORKTREE )) && icon="$IC_WORKTREE"
 
-render_agent() {
-  if [[ -n "$AGENT_NAME" ]]; then
-    c_sapphire; printf "agent:%s" "$AGENT_NAME"; rst
-  else
-    clr_dim; printf "agent:idle"; rst
+
+  if [[ -z "$dir_name" ]]; then
+    clr_dim; printf "%s  " "$IC_DIR"; rst
+    return
   fi
+
+  local icon_pad="  "
+  (( GIT_IS_WORKTREE )) && icon_pad="  "
+  clr_dir; printf "%s%s" "$icon" "$icon_pad"; rst
+  link_open "vscode://file${CWD}"
+  clr_dir; printf "%s" "$dir_name"; rst
+  link_close
 }
 
 render_lines() {
@@ -120,7 +134,7 @@ render_status() {
   if [[ "${INTERO_STATUS_QUIET:-0}" == "1" ]] && (( STATUS_CC == 0 && STATUS_API == 0 )); then
     return
   fi
-  printf '\e]8;;https://status.claude.com/\e\\'
+  link_open "https://status.claude.com/"
   color_for_severity "$STATUS_CC"
   printf "%s" "$IC_STATUS_CC"; rst
   printf " "
@@ -131,7 +145,7 @@ render_status() {
     printf "%s" "$IC_STATUS_API"
   fi
   rst
-  printf '\e]8;;\e\\'
+  link_close
 }
 
 # ── Line 2 sections ─────────────────────────────────────────────────────────
@@ -140,7 +154,7 @@ render_context() {
   clr_ctx; printf "%s ctx " "$IC_CTX"; rst
   render_bar "$CTX_PCT" 10 c_sky
   clr_dim; printf " %d%%" "$CTX_PCT"; rst
-  dim; clr_dim; printf " %s/%s" "$(fmt_tokens "$WINDOW_TOKENS")" "$(fmt_tokens "$CTX_SIZE")"; rst
+  dim; clr_dim; printf " %s∕%s" "$(fmt_tokens "$WINDOW_TOKENS")" "$(fmt_tokens "$CTX_SIZE")"; rst
 }
 
 render_tokens() {
@@ -151,7 +165,7 @@ render_burn() {
   local burn_color=clr_burn_low
   (( BURN_RATE > 2000 )) && burn_color=clr_burn_mid
   (( BURN_RATE > 5000 )) && burn_color=clr_burn_hi
-  $burn_color; printf "%s %s/m" "$IC_BURN" "$(fmt_tokens "$BURN_RATE")"; rst
+  $burn_color; printf "%s %s∕m" "$IC_BURN" "$(fmt_tokens "$BURN_RATE")"; rst
 }
 
 render_cache() {
@@ -165,7 +179,7 @@ render_mcp() {
     else
       clr_mcp_bad; bld
     fi
-    printf "%s %d/%d" "$IC_MCP" "$MCP_HEALTHY" "$MCP_TOTAL"
+    printf "%s %d∕%d" "$IC_MCP" "$MCP_HEALTHY" "$MCP_TOTAL"
   else
     clr_dim; printf "%s 0" "$IC_MCP"
   fi

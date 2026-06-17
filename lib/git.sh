@@ -39,6 +39,19 @@ git_collect() {
   # Resolve absolute git dir for file checks
   [[ "$git_dir" != /* ]] && git_dir="$cwd/$git_dir"
 
+  # Worktree detection: git-dir differs from git-common-dir in worktrees
+  local git_common_dir
+  git_common_dir=$(git -C "$cwd" rev-parse --git-common-dir 2>/dev/null)
+  [[ "$git_common_dir" != /* ]] && git_common_dir="$cwd/$git_common_dir"
+  local resolved_git_dir resolved_common_dir
+  resolved_git_dir=$(cd "$git_dir" 2>/dev/null && pwd -P)
+  resolved_common_dir=$(cd "$git_common_dir" 2>/dev/null && pwd -P)
+  if [[ "$resolved_git_dir" != "$resolved_common_dir" ]]; then
+    GIT_IS_WORKTREE=1
+  else
+    GIT_IS_WORKTREE=0
+  fi
+
   local cache_file
   cache_file=$(_git_cache_file "$cwd")
 
@@ -153,6 +166,7 @@ GIT_HAS_UPSTREAM=$GIT_HAS_UPSTREAM
 GIT_GONE=$GIT_GONE
 GIT_MERGED=$GIT_MERGED
 GIT_REMOTE_BRANCH_EXISTS=$GIT_REMOTE_BRANCH_EXISTS
+GIT_IS_WORKTREE=$GIT_IS_WORKTREE
 GIT_IN_REPO=1
 CACHE
 }
@@ -225,16 +239,10 @@ git_sync_status() {
 git_branch_section() {
   if (( ! GIT_IN_REPO )); then return; fi
 
-  # OSC 8 link for branch
-  if [[ -n "$GIT_REMOTE_URL" ]]; then
-    printf '\e]8;;%s\e\\' "$GIT_REMOTE_URL"
-  fi
-  local branch_icon="$IC_BRANCH"
-  [[ -n "$WORKTREE_NAME" ]] && branch_icon="$IC_WORKTREE"
-  clr_branch; printf "%s %s" "$branch_icon" "$GIT_BRANCH"; rst
-  if [[ -n "$GIT_REMOTE_URL" ]]; then
-    printf '\e]8;;\e\\'
-  fi
+  clr_branch; printf "%s " "$IC_BRANCH"; rst
+  [[ -n "$GIT_REMOTE_URL" ]] && link_open "$GIT_REMOTE_URL"
+  clr_branch; printf "%s" "$GIT_BRANCH"; rst
+  [[ -n "$GIT_REMOTE_URL" ]] && link_close
 
   # File state indicators
   if (( GIT_DIRTY > 0 )); then

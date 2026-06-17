@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>intero icon picker</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #1e1e2e;
+    color: #cdd6f4;
+    font-family: "Hack Nerd Font", "Hack Nerd Font Mono", monospace;
+    padding: 32px 48px;
+    line-height: 1.6;
+  }
+  h1 { color: #cba6f7; font-size: 24px; margin-bottom: 8px; }
+  h2 {
+    color: #f5c2e7;
+    font-size: 16px;
+    margin-top: 32px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #313244;
+    padding-bottom: 6px;
+  }
+  .subtitle { color: #6c7086; font-size: 13px; margin-bottom: 32px; }
+  .section { margin-bottom: 24px; }
+  .row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    margin-bottom: 2px;
+  }
+  .row:hover { background: #313244; }
+  .row.current { background: #1a1a2e; border-left: 3px solid #f5c2e7; }
+  .row.pick { background: #1a1a2e; border-left: 3px solid #a6e3a1; }
+  .icon {
+    font-size: 22px;
+    width: 40px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .label {
+    font-size: 13px;
+    color: #a6adc8;
+    min-width: 200px;
+  }
+  .code {
+    font-size: 11px;
+    color: #585b70;
+    min-width: 80px;
+  }
+  .vibe {
+    font-size: 12px;
+    color: #6c7086;
+    font-style: italic;
+  }
+  .tag {
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    background: #313244;
+    color: #89b4fa;
+    margin-left: 4px;
+  }
+  .tag.user { background: #2a4030; color: #a6e3a1; }
+  .tag.current { background: #3a2a40; color: #f5c2e7; }
+  .dim { opacity: 0.35; }
+  .sep { color: #6c7086; margin: 0 4px; }
+
+  /* catppuccin mocha colors */
+  .c-rosewater { color: #f5e0dc; }
+  .c-flamingo  { color: #f2cdcd; }
+  .c-pink      { color: #f5c2e7; }
+  .c-mauve     { color: #cba6f7; }
+  .c-red       { color: #f38ba8; }
+  .c-maroon    { color: #eba0ac; }
+  .c-peach     { color: #fab387; }
+  .c-yellow    { color: #f9e2af; }
+  .c-green     { color: #a6e3a1; }
+  .c-teal      { color: #94e2d5; }
+  .c-sky       { color: #89dceb; }
+  .c-sapphire  { color: #74c7ec; }
+  .c-blue      { color: #89b4fa; }
+  .c-lavender  { color: #b4befe; }
+  .c-text      { color: #cdd6f4; }
+  .c-subtext0  { color: #a6adc8; }
+  .c-overlay0  { color: #6c7086; }
+
+  .state-grid {
+    display: grid;
+    grid-template-columns: 140px repeat(3, 1fr);
+    gap: 4px 12px;
+    margin-bottom: 12px;
+  }
+  .state-grid .header {
+    font-size: 11px;
+    color: #585b70;
+    text-transform: uppercase;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #313244;
+  }
+  .state-grid .state-name {
+    font-size: 13px;
+    color: #f9e2af;
+    padding: 4px 0;
+  }
+  .state-grid .option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+    font-size: 13px;
+  }
+  .state-grid .option .icon { font-size: 18px; width: auto; }
+
+  .preview-box {
+    background: #11111b;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 16px 0;
+    font-size: 14px;
+    line-height: 2;
+    border: 1px solid #313244;
+  }
+  .preview-label {
+    font-size: 11px;
+    color: #585b70;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .color-demo {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    padding: 8px 12px;
+    background: #11111b;
+    border-radius: 6px;
+    margin: 8px 0;
+    font-size: 15px;
+  }
+</style>
+</head>
+<body>
+
+<h1>intero icon picker</h1>
+<div class="subtitle">
+  Pink border = current icon &nbsp;|&nbsp; Green border = your pick &nbsp;|&nbsp; Hover to highlight
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<h2>MODEL</h2>
+<div class="section">
+  <div class="row current">
+    <span class="icon c-mauve">&#xf0e7;</span>
+    <span class="label">nf-fa-bolt</span>
+    <span class="code">F0E7</span>
+    <span class="vibe">electric, fast</span>
+    <span class="tag current">current</span>
+  </div>
+  <div class="row">
+    <span class="icon c-mauve">&#xf09a9;</span>#xf2db;</span>
+    <span class="label">nf-fa-microchip</span>
+    <span class="code">F2DB</span>
+    <span class="vibe">silicon / processor</span>
+  </div>
+  <div class="row">
+    <span class="icon c-mauve">&#xf05f1;</span>#xf0c3;</span>
+    <span class="label">nf-fa-flask</span>
+    <span class="code">F0C3</span>
+    <span class="vibe">experimental / lab</span>
+  </div>
+  <div class="row">
+    <span class="icon c-mauve">&#xf1af0;</span>#xf005;</span>
+    <span class="label">nf-fa-star</span>
+    <span class="code">F005</span>
+    <span class="vibe">featured model</span>
+  </div>
+  <div class="row">
+    <span class="icon c-mauve">&#xeb0c;</span>#xf0d0;</span>
+    <span class="label">nf-fa-magic</span>
+    <span class="code">F0D0</span>
+    <span class="vibe">magic wand / generative</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<h2>WORKTREE</h2>
+<div class="section">
+  <div class="row current">
+    <span class="icon c-teal">&#xf1bb;</span>
+    <span class="label">nf-fa-tree</span>
+    <span class="code">F1BB</span>
+    <span class="vibe">literal tree</span>
+    <span class="tag current">current</span>
+  </div>
+  <div class="row">
+    <span class="icon c-teal">&#xf064c;</span>
+    <span class="label">nf-md-tree</span>
+    <span class="code">F064C</span>
+    <span class="vibe">MD variant</span>
+  </div>
+  <div class="row">
+    <span class="icon c-teal">&#xf09c5;</span>
+    <span class="label">nf-md-file_tree</span>
+    <span class="code">F09C5</span>
+    <span class="vibe">filesystem / hierarchy</span>
+  </div>
+  <div class="row">
+    <span class="icon c-teal">&#xf418;</span>
+    <span class="label">nf-oct-git_branch</span>
+    <span class="code">F418</span>
+    <span class="vibe">git-centric worktree</span>
+  </div>
+  <div class="color-demo">
+    <span>Active:</span>
+    <span class="icon c-teal">&#xf1bb; feat-test</span>
+    <span class="sep">vs</span>
+    <span>Inactive:</span>
+    <span class="icon dim c-teal">&#xf1bb;</span>
+    <span class="c-overlay0">(dim icon, no label)</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<h2>AGENT</h2>
+<div class="section">
+  <div class="row">
+    <span class="icon c-sapphire">&#xf09a9;</span>#xf2db;</span>
+    <span class="label">nf-fa-microchip</span>
+    <span class="code">F2DB</span>
+    <span class="vibe">autonomous agent</span>
+  </div>
+  <div class="row">
+    <span class="icon c-sapphire">&#xeaa7;</span>
+    <span class="label">nf-cod-rocket</span>
+    <span class="code">EAA7</span>
+    <span class="vibe">launched / dispatched</span>
+  </div>
+  <div class="row">
+    <span class="icon c-sapphire">&#xf489;</span>
+    <span class="label">nf-oct-terminal</span>
+    <span class="code">F489</span>
+    <span class="vibe">subprocess / subshell</span>
+  </div>
+  <div class="row">
+    <span class="icon c-sapphire">&#xf4b8;</span>
+    <span class="label">nf-oct-copilot</span>
+    <span class="code">F4B8</span>
+    <span class="vibe">AI assistant</span>
+  </div>
+  <div class="row">
+    <span class="icon c-sapphire">&#xea83;</span>
+    <span class="label">nf-cod-terminal</span>
+    <span class="code">EA83</span>
+    <span class="vibe">terminal (codicon variant)</span>
+  </div>
+  <div class="color-demo">
+    <span>Active:</span>
+    <span class="c-sapphire"><span class="icon">&#xf09a9;</span>#xf2db;</span> explorer</span>
+    <span class="sep">vs</span>
+    <span>Inactive:</span>
+    <span class="icon dim c-sapphire">&#xf09a9;</span>#xf2db;</span>
+    <span class="c-overlay0">idle</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<h2>BRANCH</h2>
+<div class="section">
+  <div class="row current">
+    <span class="icon c-peach">&#xe0a0;</span>
+    <span class="label">nf-pl-branch (Powerline)</span>
+    <span class="code">E0A0</span>
+    <span class="vibe">classic powerline</span>
+    <span class="tag current">current</span>
+  </div>
+  <div class="row">
+    <span class="icon c-peach">&#xf418;</span>
+    <span class="label">nf-oct-git_branch</span>
+    <span class="code">F418</span>
+    <span class="vibe">GitHub style</span>
+  </div>
+  <div class="row">
+    <span class="icon c-peach">&#xf0c40;</span>
+    <span class="label">nf-md-source_branch</span>
+    <span class="code">F0C40</span>
+    <span class="vibe">fuller branch glyph</span>
+  </div>
+  <div class="color-demo">
+    <span>Active:</span>
+    <span class="c-peach"><span class="icon">&#xe0a0;</span> main</span>
+    <span class="c-yellow">&#x2731;3</span>
+    <span class="c-blue">?1</span>
+    <span class="c-green">+2</span>
+    <span class="sep">vs</span>
+    <span>Inactive (no repo):</span>
+    <span class="icon dim">&#xe702;</span>
+    <span class="c-overlay0">nf-dev-git dimmed</span>
+    <span class="tag user">your pick</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<h2>FILE STATE COLORS (branch indicators)</h2>
+<div class="section">
+  <div class="color-demo">
+    <span class="c-peach">&#xe0a0; main</span>
+    <span class="sep">|</span>
+    <span class="c-yellow">&#x2731;3 dirty</span>
+    <span class="sep">|</span>
+    <span class="c-green">+2 staged</span>
+    <span class="sep">|</span>
+    <span class="c-blue">?1 untracked</span>
+  </div>
+  <div class="color-demo">
+    <span class="c-overlay0">&#x2731;3 old untracked color (c_overlay0 - invisible!)</span>
+    <span class="sep">&#x2192;</span>
+    <span class="c-blue">?1 new untracked color (c_blue - readable)</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<h2>SYNC STATES</h2>
+<div class="section">
+  <div class="state-grid">
+    <span class="header">State</span>
+    <span class="header">Option 1</span>
+    <span class="header">Option 2</span>
+    <span class="header">Option 3</span>
+
+    <span class="state-name">synced</span>
+    <div class="option"><span class="icon c-green">&#xf46a;</span><span class="c-subtext0">oct-sync</span></div>
+    <div class="option"><span class="icon c-green">&#xea72;</span><span class="c-subtext0">cod-sync</span></div>
+    <div class="option"><span class="icon c-green">&#xf49e;</span><span class="c-subtext0">oct-check_circle</span></div>
+
+    <span class="state-name">ahead (push)</span>
+    <div class="option"><span class="icon c-yellow">&#xf40a;</span><span class="c-subtext0">oct-upload</span></div>
+    <div class="option"><span class="icon c-yellow">&#xf0dae;</span><span class="c-subtext0">md-arrow_up_bold</span></div>
+    <div class="option"><span class="icon c-yellow">&#xf0432;</span><span class="c-subtext0">md-upload</span></div>
+
+    <span class="state-name">behind (pull)</span>
+    <div class="option"><span class="icon c-red">&#xf409;</span><span class="c-subtext0">oct-download</span></div>
+    <div class="option"><span class="icon c-red">&#xf0daf;</span><span class="c-subtext0">md-arrow_down_bold</span></div>
+    <div class="option"><span class="icon c-red">&#xf0437;</span><span class="c-subtext0">md-download</span></div>
+
+    <span class="state-name">diverged</span>
+    <div class="option"><span class="icon c-red">&#xf47f;</span><span class="c-subtext0">oct-git_compare</span></div>
+    <div class="option"><span class="icon c-red">&#xf054a;</span><span class="c-subtext0">md-compare</span></div>
+    <div class="option"><span class="icon c-red">&#xf0341;</span><span class="c-subtext0">md-swap_horiz</span></div>
+
+    <span class="state-name">no upstream</span>
+    <div class="option"><span class="icon c-peach">&#xf529;</span><span class="c-subtext0">oct-unlink</span></div>
+    <div class="option"><span class="icon c-peach">&#xf0559;</span><span class="c-subtext0">md-lan_disconnect</span></div>
+    <div class="option"><span class="icon c-peach">&#xf44c;</span><span class="c-subtext0 dim">oct-link (dim)</span></div>
+
+    <span class="state-name">stale fetch</span>
+    <div class="option"><span class="icon c-peach">&#xf43a;</span><span class="c-subtext0">oct-clock</span></div>
+    <div class="option"><span class="icon c-peach">&#xf0dbb;</span><span class="c-subtext0">md-timer_outline</span></div>
+    <div class="option"><span class="icon c-peach">&#xf03a8;</span><span class="c-subtext0">md-cached</span></div>
+
+    <span class="state-name">merging</span>
+    <div class="option"><span class="icon c-mauve">&#xf419;</span><span class="c-subtext0">oct-git_merge</span></div>
+    <div class="option"><span class="icon c-mauve">&#xf0c42;</span><span class="c-subtext0">md-source_merge</span></div>
+    <div class="option"><span class="icon c-mauve">&#xf52e;</span><span class="c-subtext0">oct-workflow</span></div>
+
+    <span class="state-name">rebasing</span>
+    <div class="option"><span class="icon c-mauve">&#xf0c40;</span><span class="c-subtext0">md-source_branch</span></div>
+    <div class="option"><span class="icon c-mauve">&#xf52e;</span><span class="c-subtext0">oct-workflow</span></div>
+    <div class="option"><span class="icon c-mauve">&#xf469;</span><span class="c-subtext0">oct-pulse</span></div>
+
+    <span class="state-name">cherry-pick</span>
+    <div class="option"><span class="icon c-mauve">&#xf490;</span><span class="c-subtext0">oct-flame</span></div>
+    <div class="option"><span class="icon c-mauve">&#xf04ee;</span><span class="c-subtext0">md-star</span></div>
+    <div class="option"><span class="icon c-mauve">&#xf469;</span><span class="c-subtext0">oct-pulse</span></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<h2>PR</h2>
+<div class="section">
+  <div class="row current">
+    <span class="icon c-blue">&#xf407;</span>
+    <span class="label">nf-oct-git_pull_request</span>
+    <span class="code">F407</span>
+    <span class="vibe">canonical PR icon</span>
+    <span class="tag current">current</span>
+  </div>
+  <div class="row">
+    <span class="icon c-blue">&#xf419;</span>
+    <span class="label">nf-oct-git_merge</span>
+    <span class="code">F419</span>
+    <span class="vibe">for merged PR state</span>
+  </div>
+  <div class="row">
+    <span class="icon c-blue">&#xf47f;</span>
+    <span class="label">nf-oct-git_compare</span>
+    <span class="code">F47F</span>
+    <span class="vibe">comparing branches</span>
+  </div>
+  <div class="color-demo">
+    <span>Has PR:</span>
+    <span class="c-blue"><span class="icon">&#xf407;</span> #42 open</span>
+    <span class="sep">vs</span>
+    <span>No PR:</span>
+    <span class="dim"><span class="icon">&#xf407;</span> no PR</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<h2>DURATION</h2>
+<div class="section">
+  <div class="row current">
+    <span class="icon c-lavender">&#xf017;</span>
+    <span class="label">nf-fa-clock</span>
+    <span class="code">F017</span>
+    <span class="vibe">standard clock</span>
+    <span class="tag current">current</span>
+  </div>
+  <div class="row">
+    <span class="icon c-lavender">&#xf43a;</span>
+    <span class="label">nf-oct-clock</span>
+    <span class="code">F43A</span>
+    <span class="vibe">GitHub-style clock</span>
+  </div>
+  <div class="row">
+    <span class="icon c-lavender">&#xf0c2a;</span>
+    <span class="label">nf-md-timelapse</span>
+    <span class="code">F0C2A</span>
+    <span class="vibe">elapsed time / progress</span>
+  </div>
+  <div class="row">
+    <span class="icon c-lavender">&#xf0dbb;</span>
+    <span class="label">nf-md-timer_outline</span>
+    <span class="code">F0DBB</span>
+    <span class="vibe">stopwatch feel</span>
+  </div>
+  <div class="row">
+    <span class="icon c-lavender">&#xf05e0;</span>
+    <span class="label">nf-md-clock</span>
+    <span class="code">F05E0</span>
+    <span class="vibe">MD clock variant</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<h2>PEAK HOURS</h2>
+<div class="section">
+  <div class="row current">
+    <span class="icon c-yellow">&#x2600;</span>
+    <span class="label">Unicode sun</span>
+    <span class="code">2600</span>
+    <span class="vibe">current</span>
+    <span class="tag current">current</span>
+  </div>
+  <div class="row pick">
+    <span class="icon c-yellow">&#xe34c;</span>
+    <span class="label">nf-weather-sunrise</span>
+    <span class="code">E34C</span>
+    <span class="vibe">sunrise / peak beginning</span>
+    <span class="tag user">your pick</span>
+  </div>
+  <div class="row">
+    <span class="icon c-yellow">&#xe30d;</span>
+    <span class="label">nf-weather-day_sunny</span>
+    <span class="code">E30D</span>
+    <span class="vibe">bright sun</span>
+  </div>
+  <div class="row">
+    <span class="icon c-yellow">&#xe36b;</span>
+    <span class="label">nf-weather-hot</span>
+    <span class="code">E36B</span>
+    <span class="vibe">thermometer + sun = hot</span>
+  </div>
+  <div class="row">
+    <span class="icon c-yellow">&#xe350;</span>
+    <span class="label">nf-weather-thermometer</span>
+    <span class="code">E350</span>
+    <span class="vibe">temperature / load</span>
+  </div>
+  <div class="color-demo">
+    <span>Peak active:</span>
+    <span class="c-yellow"><span class="icon">&#xe34c;</span> peak</span>
+    <span class="sep">vs</span>
+    <span>Off-peak:</span>
+    <span class="dim"><span class="icon c-yellow">&#xe34c;</span></span>
+    <span class="c-overlay0">(dim icon only)</span>
+    <span class="sep">or</span>
+    <span><span class="icon c-teal">&#xe32b;</span></span>
+    <span class="c-overlay0">moon = off-peak</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<h2>CONTEXT</h2>
+<div class="section">
+  <div class="row current">
+    <span class="icon c-sky">&#xf2db;</span>
+    <span class="label">nf-fa-microchip</span>
+    <span class="code">F2DB</span>
+    <span class="vibe">current</span>
+    <span class="tag current">current</span>
+  </div>
+  <div class="row">
+    <span class="icon c-sky">&#xf06bb;</span>
+    <span class="label">nf-md-memory</span>
+    <span class="code">F06BB</span>
+    <span class="vibe">RAM / context window</span>
+  </div>
+  <div class="row">
+    <span class="icon c-sky">&#xf09ea;</span>
+    <span class="label">nf-md-chip</span>
+    <span class="code">F09EA</span>
+    <span class="vibe">cleaner silicon look</span>
+  </div>
+  <div class="row">
+    <span class="icon c-sky">&#xf4bc;</span>
+    <span class="label">nf-oct-cpu</span>
+    <span class="code">F4BC</span>
+    <span class="vibe">processing unit</span>
+  </div>
+  <div class="row">
+    <span class="icon c-sky">&#xf05f1;</span>#xf0c3;</span>
+    <span class="label">nf-fa-flask</span>
+    <span class="code">F0C3</span>
+    <span class="vibe">experimental / lab</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<h2>BURN RATE</h2>
+<div class="section">
+  <div class="row current">
+    <span class="icon c-rosewater">&#xf080;</span>
+    <span class="label">nf-fa-bar_chart</span>
+    <span class="code">F080</span>
+    <span class="vibe">current</span>
+    <span class="tag current">current</span>
+  </div>
+  <div class="row pick">
+    <span class="icon c-rosewater">&#xf08f8;</span>
+    <span class="label">nf-md-fire</span>
+    <span class="code">F08F8</span>
+    <span class="vibe">burn = fire</span>
+    <span class="tag user">your pick</span>
+  </div>
+  <div class="row">
+    <span class="icon c-rosewater">&#xea6f;</span>
+    <span class="label">nf-cod-flame</span>
+    <span class="code">EA6F</span>
+    <span class="vibe">codicon flame</span>
+  </div>
+  <div class="row">
+    <span class="icon c-rosewater">&#xf490;</span>
+    <span class="label">nf-oct-flame</span>
+    <span class="code">F490</span>
+    <span class="vibe">octicon flame</span>
+  </div>
+  <div class="row">
+    <span class="icon c-rosewater">&#xe350;</span>
+    <span class="label">nf-weather-thermometer</span>
+    <span class="code">E350</span>
+    <span class="vibe">heat intensity</span>
+  </div>
+  <div class="color-demo">
+    <span>Low:</span>
+    <span class="c-rosewater"><span class="icon">&#xf08f8;</span> 1.2k/m</span>
+    <span class="sep">|</span>
+    <span>Mid:</span>
+    <span class="c-yellow"><span class="icon">&#xf08f8;</span> 3k/m</span>
+    <span class="sep">|</span>
+    <span>High:</span>
+    <span class="c-red"><span class="icon">&#xf08f8;</span> 8k/m</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<h2>RATE LIMIT</h2>
+<div class="section">
+  <div class="row current">
+    <span class="icon c-sapphire">&#xf0e4;</span>
+    <span class="label">nf-fa-tachometer</span>
+    <span class="code">F0E4</span>
+    <span class="vibe">current</span>
+    <span class="tag current">current</span>
+  </div>
+  <div class="row">
+    <span class="icon c-sapphire">&#xf0d85;</span>
+    <span class="label">nf-md-speedometer</span>
+    <span class="code">F0D85</span>
+    <span class="vibe">bigger gauge</span>
+  </div>
+  <div class="row">
+    <span class="icon c-sapphire">&#xf08fa;</span>
+    <span class="label">nf-md-gauge</span>
+    <span class="code">F08FA</span>
+    <span class="vibe">dashboard needle</span>
+  </div>
+  <div class="row">
+    <span class="icon c-sapphire">&#xeaa8;</span>
+    <span class="label">nf-cod-pulse</span>
+    <span class="code">EAA8</span>
+    <span class="vibe">heartbeat / usage line</span>
+  </div>
+  <div class="row">
+    <span class="icon c-sapphire">&#xeaa4;</span>
+    <span class="label">nf-cod-radio_tower</span>
+    <span class="code">EAA4</span>
+    <span class="vibe">signal / broadcast</span>
+  </div>
+  <div class="row">
+    <span class="icon c-sapphire">&#xf062a;</span>
+    <span class="label">nf-md-signal</span>
+    <span class="code">F062A</span>
+    <span class="vibe">signal bars</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<h2>CACHE</h2>
+<div class="section">
+  <div class="row current">
+    <span class="icon c-teal">&#xf24d;</span>
+    <span class="label">nf-fa-clone</span>
+    <span class="code">F24D</span>
+    <span class="vibe">current</span>
+    <span class="tag current">current</span>
+  </div>
+  <div class="row pick">
+    <span class="icon c-teal">&#xf49b;</span>
+    <span class="label">nf-oct-cache</span>
+    <span class="code">F49B</span>
+    <span class="vibe">cache — literal</span>
+    <span class="tag user">your pick</span>
+  </div>
+  <div class="row">
+    <span class="icon c-teal">&#xf0648;</span>
+    <span class="label">nf-md-layers</span>
+    <span class="code">F0648</span>
+    <span class="vibe">stacked data</span>
+  </div>
+  <div class="row">
+    <span class="icon c-teal">&#xf03a8;</span>
+    <span class="label">nf-md-cached</span>
+    <span class="code">F03A8</span>
+    <span class="vibe">refresh with check</span>
+  </div>
+  <div class="row">
+    <span class="icon c-teal">&#xf472;</span>
+    <span class="label">nf-oct-database</span>
+    <span class="code">F472</span>
+    <span class="vibe">stored data</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<h2>MCP HEALTH</h2>
+<div class="section">
+  <div class="row current">
+    <span class="icon c-green">&#xf233;</span>
+    <span class="label">nf-fa-server</span>
+    <span class="code">F233</span>
+    <span class="vibe">current</span>
+    <span class="tag current">current</span>
+  </div>
+  <div class="row">
+    <span class="icon c-green">&#xeaae;</span>
+    <span class="label">nf-cod-server</span>
+    <span class="code">EAAE</span>
+    <span class="vibe">codicon server</span>
+  </div>
+  <div class="row">
+    <span class="icon c-green">&#xf06b2;</span>
+    <span class="label">nf-md-server</span>
+    <span class="code">F06B2</span>
+    <span class="vibe">MD server</span>
+  </div>
+  <div class="row">
+    <span class="icon c-green">&#xf0557;</span>
+    <span class="label">nf-md-lan</span>
+    <span class="code">F0557</span>
+    <span class="vibe">network / connected services</span>
+  </div>
+  <div class="row">
+    <span class="icon c-green">&#xeaa4;</span>
+    <span class="label">nf-cod-radio_tower</span>
+    <span class="code">EAA4</span>
+    <span class="vibe">signal hub / broadcast</span>
+  </div>
+  <div class="color-demo">
+    <span>All healthy:</span>
+    <span class="c-green"><span class="icon">&#xf233;</span> 3/3</span>
+    <span class="sep">|</span>
+    <span>Degraded:</span>
+    <span class="c-red" style="font-weight:bold"><span class="icon">&#xf233;</span> 2/3</span>
+    <span class="sep">|</span>
+    <span>No data:</span>
+    <span class="dim"><span class="icon">&#xf233;</span> 0</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<h2>STASH</h2>
+<div class="section">
+  <div class="row current">
+    <span class="icon c-subtext0">&#xf187;</span>
+    <span class="label">nf-fa-archive</span>
+    <span class="code">F187</span>
+    <span class="vibe">current</span>
+    <span class="tag current">current</span>
+  </div>
+  <div class="row">
+    <span class="icon c-subtext0">&#xf472;</span>
+    <span class="label">nf-oct-database</span>
+    <span class="code">F472</span>
+    <span class="vibe">stored away</span>
+  </div>
+  <div class="row">
+    <span class="icon c-subtext0">&#xf0648;</span>
+    <span class="label">nf-md-layers</span>
+    <span class="code">F0648</span>
+    <span class="vibe">stacked changes</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<h2 style="margin-top: 48px; color: #89dceb;">FULL LINE PREVIEW (current defaults)</h2>
+<div class="preview-box">
+  <div class="preview-label">Line 1</div>
+  <span class="c-mauve" style="font-weight:bold">&#xf0e7; Opus</span><span class="c-pink"> &middot; high</span>
+  <span class="c-overlay0"> &#x2502; </span>
+  <span class="dim c-teal">&#xf1bb;</span>
+  <span class="c-overlay0"> &#x2502; </span>
+  <span class="dim c-sapphire">&#xf09a9; idle</span>
+  <span class="c-overlay0"> &#x2502; </span>
+  <span class="c-green">+42</span><span class="c-red"> -15</span>
+  <span class="c-overlay0"> &#x2502; </span>
+  <span class="c-peach">&#xe0a0; main</span> <span class="c-yellow">&#x2731;3</span> <span class="c-blue">?1</span>
+  <span class="c-overlay0"> &#x2502; </span>
+  <span class="c-yellow">&#xf40a; 1 to push</span>
+  <span class="c-overlay0"> &#x2502; </span>
+  <span class="dim">&#xf407; no PR</span>
+  <span class="c-overlay0"> &#x2502; </span>
+  <span class="c-lavender">&#xf017; 5m</span>
+  <span class="c-overlay0"> &#x2502; </span>
+  <span class="dim c-yellow">&#xe34c;</span>
+</div>
+<div class="preview-box">
+  <div class="preview-label">Line 2</div>
+  <span class="c-sky">&#xf2db; ctx</span>
+  <span class="c-sky">&#x25b0;&#x25b0;</span><span class="c-overlay0">&#x25b1;&#x25b1;&#x25b1;&#x25b1;&#x25b1;&#x25b1;&#x25b1;&#x25b1;</span>
+  <span class="c-subtext0"> 27% 53k/200k</span>
+  <span class="c-overlay0"> &#x2502; </span>
+  <span class="c-rosewater">&#xf08f8; 1.2k/m</span>
+  <span class="c-overlay0"> &#x2502; </span>
+  <span class="c-teal">&#xf49b; cache 66%</span>
+  <span class="c-overlay0"> &#x2502; </span>
+  <span class="c-green">&#xf233; 3/3</span>
+</div>
+<div class="preview-box">
+  <div class="preview-label">Lines 3-4</div>
+  <span class="c-sapphire">&#xf0e4; 5h</span>
+  <span class="c-teal">&#x25b0;</span><span class="c-overlay0">&#x25b1;&#x25b1;&#x25b1;&#x25b1;&#x25b1;&#x25b1;&#x25b1;&#x25b1;&#x25b1;</span>
+  <span class="c-subtext0"> 18%</span>
+  <span class="c-subtext0" style="opacity:0.6"> resets 2h</span>
+  <br>
+  <span class="c-flamingo">&#xf0e4; 7d</span>
+  <span class="c-overlay0">&#x25b1;&#x25b1;&#x25b1;&#x25b1;&#x25b1;&#x25b1;&#x25b1;&#x25b1;&#x25b1;&#x25b1;</span>
+  <span class="c-subtext0"> 5%</span>
+  <span class="c-subtext0" style="opacity:0.6"> resets 3d</span>
+</div>
+
+</body>
+</html>
