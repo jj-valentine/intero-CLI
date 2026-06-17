@@ -109,18 +109,6 @@ MCP_HEALTHY=0; MCP_TOTAL=0
 MCP_CACHE="$INTERO_CACHE_DIR/mcp-${SESSION_ID}"
 [[ -f "$MCP_CACHE" ]] && source "$MCP_CACHE"
 
-# Tab summary
-TAB_SUMMARY=""
-TAB_FILE="$INTERO_CACHE_DIR/tab-${SESSION_ID}"
-[[ -f "$TAB_FILE" ]] && TAB_SUMMARY=$(cat "$TAB_FILE")
-
-# ── Set tab title ────────────────────────────────────────────────────────────
-TAB_DIR="${CWD/#$HOME/~}"
-TAB_TITLE="$TAB_DIR"
-[[ -n "$GIT_BRANCH" ]] && TAB_TITLE="$TAB_TITLE · $GIT_BRANCH"
-[[ -n "$TAB_SUMMARY" ]] && TAB_TITLE="$TAB_TITLE · $TAB_SUMMARY"
-printf '\e]0;%s\a' "$TAB_TITLE" >/dev/tty 2>/dev/null
-
 # ── Render ──────────────────────────────────────────────────────────────────
 # Word-split intentionally: each variable is a space-separated list of section names.
 # shellcheck disable=SC2086
