@@ -2,10 +2,9 @@
 """
 UserPromptSubmit hook — sets terminal tab title to "~/path · branch · summary".
 
-Sync: reads cached summary, emits terminalSequence immediately (~50ms).
-Async: if prompt is substantive and cooldown elapsed, spawns detached
-curl→Anthropic API to refresh the per-session summary cache.
-New summary appears on the NEXT prompt (one-prompt lag by design).
+Fetches a 3-5 word AI summary via Anthropic API on substantive prompts.
+Emits terminalSequence once, after fetch if applicable (~1-2s).
+Trivial prompts emit immediately from cache.
 
 Requires CLAUDE_CODE_DISABLE_TERMINAL_TITLE=1 and ANTHROPIC_API_KEY.
 
@@ -13,7 +12,7 @@ Tunables (config.sh or env — env wins):
   INTERO_TAB_DISABLE_SUMMARY=1   ~/path · branch only, never call API
   INTERO_TAB_MODEL=<id>          pin model (overrides lib/model.sh)
   INTERO_TAB_COOLDOWN=90         seconds between summary refreshes
-  INTERO_TAB_TIMEOUT=8           max seconds for the curl call
+  INTERO_TAB_TIMEOUT=8           max seconds for the API call
 """
 import json
 import os
@@ -21,6 +20,8 @@ import re
 import subprocess
 import sys
 import time
+import urllib.request
+import urllib.error
 
 try:
     data = json.load(sys.stdin)
@@ -96,13 +97,19 @@ def emit(title):
     if not title:
         return
     title = _sanitize_title(title)
+    tab_title = title.replace(" · ", "  ·  ")
     print(json.dumps({
         "hookSpecificOutput": {
             "hookEventName": "UserPromptSubmit",
             "sessionTitle": title,
         },
-        "terminalSequence": f"\033]0;{title}\007",
+        "terminalSequence": f"\033]0;{tab_title}\007",
     }))
+
+
+def bail():
+    emit(get_title())
+    sys.exit(0)
 
 
 # ── Cache setup ─────────────────────────────────────────────────────────────
@@ -123,15 +130,10 @@ if cache_file and os.path.exists(cache_file):
     except Exception:
         pass
 
-# Always emit current title immediately (sync part)
-emit(get_title())
-
 if knob("INTERO_TAB_DISABLE_SUMMARY") in ("1", "true", "yes"):
-    sys.exit(0)
-if not session_id:
-    sys.exit(0)
-if not cache_file:
-    sys.exit(0)
+    bail()
+if not session_id or not cache_file:
+    bail()
 
 # ── Should we refresh? ─────────────────────────────────────────────────────
 prompt_lower = (prompt or "").lower().strip()
@@ -150,7 +152,7 @@ except ValueError:
     cooldown = 90.0
 
 if trivial or cached_age < cooldown:
-    sys.exit(0)
+    bail()
 
 # ── Resolve model ──────────────────────────────────────────────────────────
 model = knob("INTERO_TAB_MODEL")
@@ -167,14 +169,14 @@ if not model:
     except Exception:
         pass
 if not model:
-    sys.exit(0)
+    bail()
 
 # ── Resolve API key ────────────────────────────────────────────────────────
 api_key = os.environ.get("ANTHROPIC_API_KEY", "")
 if not api_key:
-    sys.exit(0)
+    bail()
 
-# ── Spawn detached curl ───────────────────────────────────────────────────
+# ── Fetch summary ──────────────────────────────────────────────────────────
 try:
     timeout_s = int(float(knob("INTERO_TAB_TIMEOUT", "8")))
 except ValueError:
@@ -200,42 +202,24 @@ request_body = json.dumps({
         f"Current tab: {existing}\nNew user message: {prompt[:400]}"}],
 })
 
-# API key and cache path passed via env (not interpolated into bash string)
-script = f'''
-response=$(curl -s --max-time {timeout_s} \
-  -H "x-api-key: $ANTHROPIC_API_KEY" \
-  -H "content-type: application/json" \
-  -H "anthropic-version: 2023-06-01" \
-  -d @- \
-  "https://api.anthropic.com/v1/messages" <<'BODY'
-{request_body}
-BODY
-)
-summary=$(echo "$response" | python3 -c "
-import json, sys
 try:
-    d = json.load(sys.stdin)
-    t = d['content'][0]['text'].strip().rstrip('.').strip('\"').lower()
-    if 0 < len(t) < 60: print(t)
-except Exception: pass
-" 2>/dev/null)
-[ -n "$summary" ] && printf '%s' "$summary" > "$INTERO_CACHE_FILE"
-'''
-
-try:
-    subprocess.Popen(
-        ["bash", "-c", script],
-        start_new_session=True,
-        stdin=subprocess.DEVNULL,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-        env={
-            "ANTHROPIC_API_KEY": api_key,
-            "PATH": os.environ.get("PATH", ""),
-            "INTERO_CACHE_FILE": cache_file,
+    req = urllib.request.Request(
+        "https://api.anthropic.com/v1/messages",
+        data=request_body.encode(),
+        headers={
+            "x-api-key": api_key,
+            "content-type": "application/json",
+            "anthropic-version": "2023-06-01",
         },
     )
+    with urllib.request.urlopen(req, timeout=timeout_s) as resp:
+        body = json.loads(resp.read())
+    summary = body["content"][0]["text"].strip().rstrip(".").strip('"').lower()
+    if 0 < len(summary) < 60:
+        with open(cache_file, "w") as f:
+            f.write(summary)
 except Exception:
     pass
 
+emit(get_title())
 sys.exit(0)

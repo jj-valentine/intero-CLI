@@ -31,8 +31,8 @@ render_title() {
   summary=$(_title_summary "$session_id")
 
   out="$path"
-  [[ -n "$branch" ]] && out="$out  ·  $branch"
-  [[ -n "$summary" ]] && out="$out  ·  $summary"
+  [[ -n "$branch" ]] && out="$out · $branch"
+  [[ -n "$summary" ]] && out="$out · $summary"
   echo "$out"
 }
 

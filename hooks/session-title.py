@@ -38,10 +38,11 @@ if not title:
     title = cwd.replace(home, "~") if cwd.startswith(home) else cwd
 
 title = re.sub(r'[\x00-\x1f\x7f]', '', title)[:200]
+tab_title = title.replace(" · ", "  ·  ")
 print(json.dumps({
     "hookSpecificOutput": {
         "hookEventName": "SessionStart",
         "sessionTitle": title,
     },
-    "terminalSequence": f"\033]0;{title}\007",
+    "terminalSequence": f"\033]0;{tab_title}\007",
 }))
