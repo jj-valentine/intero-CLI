@@ -19,7 +19,7 @@ _title_summary() {
   [[ -z "$session_id" ]] && return
   local tmpdir="${TMPDIR:-${XDG_RUNTIME_DIR:-/tmp}}"
   local cache_file="$tmpdir/intero/tab-$session_id"
-  [[ -f "$cache_file" ]] && cat "$cache_file"
+  [[ -f "$cache_file" ]] && tr -d '\000-\037\177' < "$cache_file"
 }
 
 render_title() {
