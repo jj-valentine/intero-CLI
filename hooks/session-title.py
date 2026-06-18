@@ -39,8 +39,7 @@ home = os.path.expanduser("~")
 if not tab_title:
     tab_title = cwd.replace(home, "~") if cwd.startswith(home) else cwd
 
-dir_name = cwd.replace(home, "~") if cwd.startswith(home) else cwd
-session_title = f"{dir_name} · {session_id}" if session_id else dir_name
+session_title = session_id if session_id else (cwd.replace(home, "~") if cwd.startswith(home) else cwd)
 
 tab_title = re.sub(r'[\x00-\x1f\x7f]', '', tab_title)[:200]
 session_title = re.sub(r'[\x00-\x1f\x7f]', '', session_title)[:200]

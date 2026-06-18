@@ -98,10 +98,11 @@ def emit(title):
         return
     title = _sanitize_title(title)
     tab_title = title.replace(" · ", "  ·  ")
+    st = session_id if session_id else title
     print(json.dumps({
         "hookSpecificOutput": {
             "hookEventName": "UserPromptSubmit",
-            "sessionTitle": title,
+            "sessionTitle": st,
         },
         "terminalSequence": f"\033]0;{tab_title}\007",
     }))
