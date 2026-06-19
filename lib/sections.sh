@@ -27,16 +27,14 @@ render_worktree() {
 }
 
 render_dir() {
-  local dir_name icon="$IC_DIR" git_root=""
+  local dir_name icon="$IC_DIR"
   if (( GIT_IN_REPO )); then
-    git_root=$(git -C "$CWD" rev-parse --show-toplevel 2>/dev/null)
-    dir_name="${git_root##*/}"
-    [[ "$CWD" != "$git_root" ]] && icon="$IC_DIR_OPEN"
+    dir_name="${GIT_TOPLEVEL##*/}"
+    [[ "$CWD" != "$GIT_TOPLEVEL" ]] && icon="$IC_DIR_OPEN"
   else
     dir_name="${CWD##*/}"
   fi
   (( GIT_IS_WORKTREE )) && icon="$IC_WORKTREE"
-
 
   if [[ -z "$dir_name" ]]; then
     clr_dim; printf "%s  " "$IC_DIR"; rst
@@ -44,7 +42,7 @@ render_dir() {
   fi
 
   local icon_pad="  "
-  (( GIT_IS_WORKTREE )) && icon_pad="  "
+  (( GIT_IS_WORKTREE )) && icon_pad="   "
   clr_dir; printf "%s%s" "$icon" "$icon_pad"; rst
   link_open "vscode://file${CWD}"
   clr_dir; printf "%s" "$dir_name"; rst

@@ -39,6 +39,16 @@ git_collect() {
   # Resolve absolute git dir for file checks
   [[ "$git_dir" != /* ]] && git_dir="$cwd/$git_dir"
 
+  local cache_file
+  cache_file=$(_git_cache_file "$cwd")
+
+  if _git_cache_fresh "$cache_file"; then
+    source "$cache_file"
+    return
+  fi
+
+  # ── Fresh collection ─────────────────────────────────────────────────────
+
   # Worktree detection: git-dir differs from git-common-dir in worktrees
   local git_common_dir
   git_common_dir=$(git -C "$cwd" rev-parse --git-common-dir 2>/dev/null)
@@ -52,15 +62,8 @@ git_collect() {
     GIT_IS_WORKTREE=0
   fi
 
-  local cache_file
-  cache_file=$(_git_cache_file "$cwd")
-
-  if _git_cache_fresh "$cache_file"; then
-    source "$cache_file"
-    return
-  fi
-
-  # ── Fresh collection ─────────────────────────────────────────────────────
+  # Git toplevel (used by render_dir)
+  GIT_TOPLEVEL=$(git -C "$cwd" rev-parse --show-toplevel 2>/dev/null)
 
   # Branch + ahead/behind from single porcelain call
   local status_output
@@ -167,6 +170,7 @@ GIT_GONE=$GIT_GONE
 GIT_MERGED=$GIT_MERGED
 GIT_REMOTE_BRANCH_EXISTS=$GIT_REMOTE_BRANCH_EXISTS
 GIT_IS_WORKTREE=$GIT_IS_WORKTREE
+GIT_TOPLEVEL="$GIT_TOPLEVEL"
 GIT_IN_REPO=1
 CACHE
 }
