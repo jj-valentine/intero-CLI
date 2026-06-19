@@ -58,8 +58,6 @@ clr_rate5h()   { c_sapphire; }
 clr_rate7d()   { c_flamingo; }
 clr_sep()      { c_overlay0; }
 clr_dim()      { c_subtext0; }
-clr_mcp_ok()   { c_green; }
-clr_mcp_bad()  { c_red; }
 clr_dir()      { c_blue; }
 clr_pr()       { c_periwinkle; }
 clr_peak()     { c_yellow; }
@@ -73,4 +71,8 @@ clr_status_unk()  { c_overlay1; }
 
 # ── Separator ────────────────────────────────────────────────────────────────
 sep() { clr_sep; printf " │ "; rst; }
-dot() { clr_sep; printf " · "; rst; }
+dot() { clr_sep; bld; printf " · "; rst; }
+
+# ── Hyperlinks (OSC 8) ───────────────────────────────────────────────────────
+link_open()  { printf '\e]8;;%s\e\\' "$1"; }
+link_close() { printf '\e]8;;\e\\'; }

@@ -34,6 +34,7 @@ SESSION_ID=$(jq_get '.session_id')
 
 # ── Parse JSON fields ────────────────────────────────────────────────────────
 MODEL_NAME=$(jq_get '.model.display_name')
+MODEL_NAME="${MODEL_NAME/ context/}"
 MODEL_ID=$(jq_get '.model.id')
 
 CTX_PCT=$(jq_get '.context_window.used_percentage' | cut -d. -f1)
@@ -59,8 +60,6 @@ LINES_DEL=$(echo "$INPUT" | jq -r '.cost.total_lines_removed // 0' 2>/dev/null)
 DURATION_MS=$(echo "$INPUT" | jq -r '.cost.total_duration_ms // 0' 2>/dev/null)
 
 WORKTREE_NAME=$(jq_get '.worktree.name')
-AGENT_NAME=$(jq_get '.agent.name')
-
 # ── Derived values ───────────────────────────────────────────────────────────
 WINDOW_TOKENS=$((CACHE_INPUT + CACHE_CREATE + CACHE_READ))
 
@@ -84,16 +83,12 @@ BURN_RATE=$(calc_burn_rate "$TOTAL_TOKENS" "$DURATION_MS")
 CACHE_RATIO=$(calc_cache_ratio "$CACHE_READ" "$CACHE_CREATE" "$CACHE_INPUT")
 WEIGHT=$(model_weight "$MODEL_ID")
 
-# Thinking effort — try to read from settings
-THINKING_EFFORT=""
-if [[ -f "$HOME/.claude/settings.json" ]]; then
-  THINKING_EFFORT=$(jq -r '.effortLevel // empty' "$HOME/.claude/settings.json" 2>/dev/null)
-fi
+THINKING_EFFORT=$(jq_get '.effort.level')
 
 # ── Default layout (override in config.sh) ──────────────────────────────────
-: "${INTERO_LINE1:=model dir agent lines git}"
+: "${INTERO_LINE1:=model dir lines git}"
 : "${INTERO_LINE2:=context cache tokens burn duration peak status}"
-: "${INTERO_LINE3:=rate5h mcp}"
+: "${INTERO_LINE3:=rate5h}"
 : "${INTERO_LINE4:=rate7d}"
 
 # ── Collect external data ────────────────────────────────────────────────────
@@ -104,10 +99,6 @@ if [[ "$INTERO_LINE1 $INTERO_LINE2 $INTERO_LINE3 $INTERO_LINE4" == *status* ]]; 
   status_collect
 fi
 
-# MCP health (read from cache, don't probe)
-MCP_HEALTHY=0; MCP_TOTAL=0
-MCP_CACHE="$INTERO_CACHE_DIR/mcp-${SESSION_ID}"
-[[ -f "$MCP_CACHE" ]] && source "$MCP_CACHE"
 
 # ── Render ──────────────────────────────────────────────────────────────────
 # Word-split intentionally: each variable is a space-separated list of section names.

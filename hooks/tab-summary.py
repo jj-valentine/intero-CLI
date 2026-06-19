@@ -98,10 +98,11 @@ def emit(title):
         return
     title = _sanitize_title(title)
     tab_title = title.replace(" · ", "  ·  ")
+    st = session_id if session_id else title
     print(json.dumps({
         "hookSpecificOutput": {
             "hookEventName": "UserPromptSubmit",
-            "sessionTitle": title,
+            "sessionTitle": st,
         },
         "terminalSequence": f"\033]0;{tab_title}\007",
     }))
@@ -190,16 +191,30 @@ if cache_file and os.path.exists(cache_file):
     except Exception:
         pass
 
+repo_name = os.path.basename(cwd)
+branch = ""
+try:
+    r = subprocess.run(["git", "-C", cwd, "rev-parse", "--abbrev-ref", "HEAD"],
+                       capture_output=True, text=True, timeout=2)
+    if r.returncode == 0:
+        branch = r.stdout.strip()
+except Exception:
+    pass
+
 request_body = json.dumps({
     "model": model,
     "max_tokens": 20,
+    "temperature": 0.3,
     "system": (
-        "Generate a 3-5 word summary for a browser tab title describing "
-        "what the user is working on. Output ONLY the summary, no quotes, "
-        "no punctuation, no explanation. Lowercase."
+        "Write a 3-5 word terminal tab title summarizing the user's current task. "
+        "Be specific — name the thing being worked on. Lowercase, no punctuation.\n\n"
+        "Good: \"fixing auth token refresh\", \"statusline icon overhaul\", "
+        "\"cache ttl bug in git.sh\", \"pr review round 2 fixes\"\n"
+        "Bad: \"working on code\", \"updating project\", \"debugging issue\", \"making changes\""
     ),
     "messages": [{"role": "user", "content":
-        f"Current tab: {existing}\nNew user message: {prompt[:400]}"}],
+        f"Repo: {repo_name}\nBranch: {branch}\n"
+        f"Previous tab: {existing}\nUser message: {prompt[:400]}"}],
 })
 
 try:

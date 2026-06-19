@@ -58,24 +58,25 @@ CACHE
     PR_CHECKS_PASS=$(echo "$body" | grep -c '\- \[x\]' 2>/dev/null || echo 0)
   fi
 
-  # Write cache
-  cat > "$cache_file" <<CACHE
-PR_NUMBER="$PR_NUMBER"
-PR_STATE="$PR_STATE"
-PR_TITLE="$PR_TITLE"
-PR_URL="$PR_URL"
-PR_CHECKS_PASS=$PR_CHECKS_PASS
-PR_CHECKS_TOTAL=$PR_CHECKS_TOTAL
-CACHE
+  # Write cache (printf %q escapes shell metacharacters to prevent injection)
+  {
+    printf 'PR_NUMBER=%q\n' "$PR_NUMBER"
+    printf 'PR_STATE=%q\n' "$PR_STATE"
+    printf 'PR_TITLE=%q\n' "$PR_TITLE"
+    printf 'PR_URL=%q\n' "$PR_URL"
+    printf 'PR_CHECKS_PASS=%d\n' "$PR_CHECKS_PASS"
+    printf 'PR_CHECKS_TOTAL=%d\n' "$PR_CHECKS_TOTAL"
+  } > "$cache_file"
 }
 
 # Render PR section
 pr_section() {
   [[ -z "$PR_NUMBER" ]] && return
 
-  [[ -n "$PR_URL" ]] && printf '\e]8;;%s\e\\' "$PR_URL"
-
-  clr_pr; printf "%s #%s" "$IC_PR" "$PR_NUMBER"; rst
+  clr_pr; printf "%s " "$IC_PR"; rst
+  [[ -n "$PR_URL" ]] && link_open "$PR_URL"
+  clr_pr; printf "#%s" "$PR_NUMBER"; rst
+  [[ -n "$PR_URL" ]] && link_close
 
   case "$PR_STATE" in
     OPEN)   c_green; printf " OPEN"; rst ;;
@@ -89,9 +90,7 @@ pr_section() {
     else
       c_yellow
     fi
-    printf " %s%d/%d" "$IC_SYNCED" "$PR_CHECKS_PASS" "$PR_CHECKS_TOTAL"
+    printf " %s%d∕%d" "$IC_SYNCED" "$PR_CHECKS_PASS" "$PR_CHECKS_TOTAL"
     rst
   fi
-
-  [[ -n "$PR_URL" ]] && printf '\e]8;;\e\\'
 }

@@ -49,6 +49,22 @@ git_collect() {
 
   # ── Fresh collection ─────────────────────────────────────────────────────
 
+  # Worktree detection: git-dir differs from git-common-dir in worktrees
+  local git_common_dir
+  git_common_dir=$(git -C "$cwd" rev-parse --git-common-dir 2>/dev/null)
+  [[ "$git_common_dir" != /* ]] && git_common_dir="$cwd/$git_common_dir"
+  local resolved_git_dir resolved_common_dir
+  resolved_git_dir=$(cd "$git_dir" 2>/dev/null && pwd -P)
+  resolved_common_dir=$(cd "$git_common_dir" 2>/dev/null && pwd -P)
+  if [[ "$resolved_git_dir" != "$resolved_common_dir" ]]; then
+    GIT_IS_WORKTREE=1
+  else
+    GIT_IS_WORKTREE=0
+  fi
+
+  # Git toplevel (used by render_dir)
+  GIT_TOPLEVEL=$(git -C "$cwd" rev-parse --show-toplevel 2>/dev/null)
+
   # Branch + ahead/behind from single porcelain call
   local status_output
   status_output=$(git -C "$cwd" status --porcelain=v2 --branch 2>/dev/null)
@@ -137,24 +153,26 @@ git_collect() {
     GIT_REMOTE_BRANCH_EXISTS=0
   fi
 
-  # Write cache
-  cat > "$cache_file" <<CACHE
-GIT_BRANCH="$GIT_BRANCH"
-GIT_AHEAD=$GIT_AHEAD
-GIT_BEHIND=$GIT_BEHIND
-GIT_STAGED=$GIT_STAGED
-GIT_DIRTY=$GIT_DIRTY
-GIT_UNTRACKED=$GIT_UNTRACKED
-GIT_STASH=$GIT_STASH
-GIT_OP="$GIT_OP"
-GIT_LAST_FETCH=$GIT_LAST_FETCH
-GIT_REMOTE_URL="$GIT_REMOTE_URL"
-GIT_HAS_UPSTREAM=$GIT_HAS_UPSTREAM
-GIT_GONE=$GIT_GONE
-GIT_MERGED=$GIT_MERGED
-GIT_REMOTE_BRANCH_EXISTS=$GIT_REMOTE_BRANCH_EXISTS
-GIT_IN_REPO=1
-CACHE
+  # Write cache (printf %q escapes shell metacharacters to prevent injection)
+  {
+    printf 'GIT_BRANCH=%q\n' "$GIT_BRANCH"
+    printf 'GIT_AHEAD=%d\n' "$GIT_AHEAD"
+    printf 'GIT_BEHIND=%d\n' "$GIT_BEHIND"
+    printf 'GIT_STAGED=%d\n' "$GIT_STAGED"
+    printf 'GIT_DIRTY=%d\n' "$GIT_DIRTY"
+    printf 'GIT_UNTRACKED=%d\n' "$GIT_UNTRACKED"
+    printf 'GIT_STASH=%d\n' "$GIT_STASH"
+    printf 'GIT_OP=%q\n' "$GIT_OP"
+    printf 'GIT_LAST_FETCH=%d\n' "$GIT_LAST_FETCH"
+    printf 'GIT_REMOTE_URL=%q\n' "$GIT_REMOTE_URL"
+    printf 'GIT_HAS_UPSTREAM=%d\n' "$GIT_HAS_UPSTREAM"
+    printf 'GIT_GONE=%d\n' "$GIT_GONE"
+    printf 'GIT_MERGED=%d\n' "$GIT_MERGED"
+    printf 'GIT_REMOTE_BRANCH_EXISTS=%d\n' "$GIT_REMOTE_BRANCH_EXISTS"
+    printf 'GIT_IS_WORKTREE=%d\n' "$GIT_IS_WORKTREE"
+    printf 'GIT_TOPLEVEL=%q\n' "$GIT_TOPLEVEL"
+    printf 'GIT_IN_REPO=1\n'
+  } > "$cache_file"
 }
 
 # ── Sync status rendering ───────────────────────────────────────────────────
@@ -225,16 +243,10 @@ git_sync_status() {
 git_branch_section() {
   if (( ! GIT_IN_REPO )); then return; fi
 
-  # OSC 8 link for branch
-  if [[ -n "$GIT_REMOTE_URL" ]]; then
-    printf '\e]8;;%s\e\\' "$GIT_REMOTE_URL"
-  fi
-  local branch_icon="$IC_BRANCH"
-  [[ -n "$WORKTREE_NAME" ]] && branch_icon="$IC_WORKTREE"
-  clr_branch; printf "%s %s" "$branch_icon" "$GIT_BRANCH"; rst
-  if [[ -n "$GIT_REMOTE_URL" ]]; then
-    printf '\e]8;;\e\\'
-  fi
+  clr_branch; printf "%s " "$IC_BRANCH"; rst
+  [[ -n "$GIT_REMOTE_URL" ]] && link_open "$GIT_REMOTE_URL"
+  clr_branch; printf "%s" "$GIT_BRANCH"; rst
+  [[ -n "$GIT_REMOTE_URL" ]] && link_close
 
   # File state indicators
   if (( GIT_DIRTY > 0 )); then

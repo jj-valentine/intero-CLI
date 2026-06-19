@@ -19,30 +19,35 @@ cwd = data.get("cwd", "") or (data.get("tool_input") or {}).get("cwd", "") or os
 if not cwd:
     sys.exit(0)
 
+session_id = data.get("session_id", "")
+
 HOOK_DIR = os.path.dirname(os.path.abspath(__file__))
 TITLE_SH = os.path.join(HOOK_DIR, "..", "lib", "title.sh")
 
-title = ""
+tab_title = ""
 try:
     r = subprocess.run(
         ["bash", TITLE_SH],
         capture_output=True, text=True, timeout=2, cwd=cwd,
     )
     if r.returncode == 0:
-        title = r.stdout.strip()
+        tab_title = r.stdout.strip()
 except Exception:
     pass
 
-if not title:
-    home = os.path.expanduser("~")
-    title = cwd.replace(home, "~") if cwd.startswith(home) else cwd
+home = os.path.expanduser("~")
+if not tab_title:
+    tab_title = cwd.replace(home, "~") if cwd.startswith(home) else cwd
 
-title = re.sub(r'[\x00-\x1f\x7f]', '', title)[:200]
-tab_title = title.replace(" · ", "  ·  ")
+session_title = session_id if session_id else (cwd.replace(home, "~") if cwd.startswith(home) else cwd)
+
+tab_title = re.sub(r'[\x00-\x1f\x7f]', '', tab_title)[:200]
+session_title = re.sub(r'[\x00-\x1f\x7f]', '', session_title)[:200]
+tab_title = tab_title.replace(" · ", "  ·  ")
 print(json.dumps({
     "hookSpecificOutput": {
         "hookEventName": "SessionStart",
-        "sessionTitle": title,
+        "sessionTitle": session_title,
     },
     "terminalSequence": f"\033]0;{tab_title}\007",
 }))

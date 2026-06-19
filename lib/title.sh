@@ -9,7 +9,7 @@ _title_path() {
 
 _title_branch() {
   local branch
-  branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null) || return
+  branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null) || { echo "no repo"; return; }
   [[ "$branch" == "HEAD" ]] && return
   echo "$branch"
 }
