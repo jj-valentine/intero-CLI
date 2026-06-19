@@ -17,7 +17,6 @@ IC_CACHE=""       # F24D  clone/layers
 IC_CLOCK=""       # F017  clock
 IC_BURN=""       # F490  octicons flame
 IC_RATE=""       # F0E4  tachometer
-IC_MCP=""         # F233  server
 IC_STASH=""       # F187  archive
 IC_WORKTREE="$(printf '\UF1897')"  # F1897  md-forest_outline
 IC_PR=""          # F407  octicons git-pull-request

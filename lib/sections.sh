@@ -170,19 +170,6 @@ render_cache() {
   clr_cache; printf "%s cache %d%%" "$IC_CACHE" "$CACHE_RATIO"; rst
 }
 
-render_mcp() {
-  if (( MCP_TOTAL > 0 )); then
-    if (( MCP_HEALTHY == MCP_TOTAL )); then
-      clr_mcp_ok
-    else
-      clr_mcp_bad; bld
-    fi
-    printf "%s %d∕%d" "$IC_MCP" "$MCP_HEALTHY" "$MCP_TOTAL"
-  else
-    clr_dim; printf "%s 0" "$IC_MCP"
-  fi
-  rst
-}
 
 # ── Line 3-4 sections ───────────────────────────────────────────────────────
 

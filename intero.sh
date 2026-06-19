@@ -88,7 +88,7 @@ THINKING_EFFORT=$(jq_get '.effort.level')
 # ── Default layout (override in config.sh) ──────────────────────────────────
 : "${INTERO_LINE1:=model dir lines git}"
 : "${INTERO_LINE2:=context cache tokens burn duration peak status}"
-: "${INTERO_LINE3:=rate5h mcp}"
+: "${INTERO_LINE3:=rate5h}"
 : "${INTERO_LINE4:=rate7d}"
 
 # ── Collect external data ────────────────────────────────────────────────────
@@ -99,10 +99,6 @@ if [[ "$INTERO_LINE1 $INTERO_LINE2 $INTERO_LINE3 $INTERO_LINE4" == *status* ]]; 
   status_collect
 fi
 
-# MCP health (read from cache, don't probe)
-MCP_HEALTHY=0; MCP_TOTAL=0
-MCP_CACHE="$INTERO_CACHE_DIR/mcp-${SESSION_ID}"
-[[ -f "$MCP_CACHE" ]] && source "$MCP_CACHE"
 
 # ── Render ──────────────────────────────────────────────────────────────────
 # Word-split intentionally: each variable is a space-separated list of section names.

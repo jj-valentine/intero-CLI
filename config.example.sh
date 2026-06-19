@@ -20,7 +20,6 @@ INTERO_BAR_STYLE="parallelogram"
 
 # Feature toggles (1 = on, 0 = off)
 # INTERO_SHOW_PR=1
-# INTERO_SHOW_MCP=1
 # INTERO_SHOW_PEAK=1
 # INTERO_SHOW_CACHE=1
 # INTERO_SHOW_BURN=1
@@ -46,10 +45,10 @@ INTERO_BAR_STYLE="parallelogram"
 #
 # Available sections:
 #   model dir worktree lines branch sync pr duration peak status
-#   context burn cache mcp
+#   context burn cache
 #   rate5h rate7d
 
 INTERO_LINE1="model dir lines branch sync pr"
 INTERO_LINE2="context tokens burn cache duration peak status"
-INTERO_LINE3="rate5h mcp"
+INTERO_LINE3="rate5h"
 INTERO_LINE4="rate7d"

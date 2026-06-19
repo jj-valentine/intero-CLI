@@ -72,7 +72,7 @@ fi
 SUMMARY_MODEL_CACHE="$HOME/.cache/intero/summary-model"
 if [[ ! -f "$SUMMARY_MODEL_CACHE" ]]; then
   mkdir -p "$(dirname "$SUMMARY_MODEL_CACHE")"
-  echo "claude-haiku-4-5-20251001" > "$SUMMARY_MODEL_CACHE"
+  echo "claude-sonnet-4-6" > "$SUMMARY_MODEL_CACHE"
   echo "  ✓ Seeded summary model cache at $SUMMARY_MODEL_CACHE"
 else
   echo "  · Summary model cache exists ($(cat "$SUMMARY_MODEL_CACHE"))"

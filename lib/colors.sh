@@ -58,8 +58,6 @@ clr_rate5h()   { c_sapphire; }
 clr_rate7d()   { c_flamingo; }
 clr_sep()      { c_overlay0; }
 clr_dim()      { c_subtext0; }
-clr_mcp_ok()   { c_green; }
-clr_mcp_bad()  { c_red; }
 clr_dir()      { c_blue; }
 clr_pr()       { c_periwinkle; }
 clr_peak()     { c_yellow; }
