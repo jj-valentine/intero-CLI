@@ -44,10 +44,13 @@ session_title = session_id if session_id else (cwd.replace(home, "~") if cwd.sta
 tab_title = re.sub(r'[\x00-\x1f\x7f]', '', tab_title)[:200]
 session_title = re.sub(r'[\x00-\x1f\x7f]', '', session_title)[:200]
 tab_title = tab_title.replace(" · ", "  ·  ")
-print(json.dumps({
-    "hookSpecificOutput": {
+out = {"terminalSequence": f"\033]0;{tab_title}\007"}
+# Name the session only when it has no name yet, so a resumed session keeps
+# the name given with /rename or in the Claude app.
+_existing = data.get("session_title")
+if not (isinstance(_existing, str) and _existing.strip()):
+    out["hookSpecificOutput"] = {
         "hookEventName": "SessionStart",
         "sessionTitle": session_title,
-    },
-    "terminalSequence": f"\033]0;{tab_title}\007",
-}))
+    }
+print(json.dumps(out))

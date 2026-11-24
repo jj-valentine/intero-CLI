@@ -40,6 +40,10 @@ if session_id:
     session_id = re.sub(r'[^A-Za-z0-9._-]', '_', session_id)
 cwd = data.get("cwd", "") or os.getcwd()
 
+# The session's current name, if it has one. Claude Code passes it in.
+_existing = data.get("session_title")
+existing_title = _existing.strip() if isinstance(_existing, str) else ""
+
 HOOK_DIR = os.path.dirname(os.path.abspath(__file__))
 INTERO_DIR = os.path.join(HOOK_DIR, "..")
 TITLE_SH = os.path.join(INTERO_DIR, "lib", "title.sh")
@@ -98,14 +102,15 @@ def emit(title):
         return
     title = _sanitize_title(title)
     tab_title = title.replace(" · ", "  ·  ")
-    st = session_id if session_id else title
-    print(json.dumps({
-        "hookSpecificOutput": {
+    out = {"terminalSequence": f"\033]0;{tab_title}\007"}
+    # Name the session only when it has no name yet. Setting it on every prompt
+    # overwrote names given with /rename or in the Claude app.
+    if not existing_title:
+        out["hookSpecificOutput"] = {
             "hookEventName": "UserPromptSubmit",
-            "sessionTitle": st,
-        },
-        "terminalSequence": f"\033]0;{tab_title}\007",
-    }))
+            "sessionTitle": session_id if session_id else title,
+        }
+    print(json.dumps(out))
 
 
 def bail():
